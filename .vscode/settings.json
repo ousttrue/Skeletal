@@ -1,0 +1,6 @@
+{
+    "catch2TestExplorer.executables": [
+        "build/**/*Test*.exe"
+    ],
+    "catch2TestExplorer.defaultCwd": "${absDirpath}",
+}
