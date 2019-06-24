@@ -6,13 +6,13 @@
 #include <vector>
 #include <fstream>
 
-auto readAllBytes(const char *path) -> decltype(auto)
+auto read_allbytes(std::string_view path) -> decltype(auto)
 {
     std::vector<std::byte> data;
 
     // open the file for binary reading
     std::ifstream file;
-    file.open(path, std::ios_base::binary);
+    file.open(path.data(), std::ios_base::binary);
     if (file.is_open())
     {
         // get the length of the file
@@ -30,8 +30,30 @@ auto readAllBytes(const char *path) -> decltype(auto)
     return data;
 }
 
-TEST_CASE("glb load", "[glb]")
+auto ROOT_DIR = std::string("..\\..\\");
+
+void test_gltf(const std::string &test_path)
 {
-    auto bytes = readAllBytes("..\\..\\dependencies\\glTF-Sample-Models\\2.0\\SimpleMeshes\\glTF\\SimpleMeshes.gltf");
+    auto path = ROOT_DIR + test_path;
+    auto bytes = read_allbytes(path);
+    simple_gltf::Storage storage;
+    storage.parse(bytes.data(), bytes.size(), path);
     REQUIRE(!bytes.empty());
+}
+
+// TEST_CASE("SimpleMeshes", "[gltf]")
+// {
+//     test_gltf("dependencies\\glTF-Sample-Models\\2.0\\SimpleMeshes\\glTF\\SimpleMeshes.gltf");
+// }
+
+// TEST_CASE("key", "[json]")
+// {
+//     auto json = nlohmann::json{{}};
+//     auto v = json.at("x");
+//     auto a = 0;
+// }
+
+TEST_CASE("Cube", "[glb]")
+{
+    test_gltf("dependencies\\glTF-Sample-Models\\2.0\\Box\\glTF-Binary\\Box.glb");
 }

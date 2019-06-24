@@ -3,4 +3,7 @@
         "build/**/*Test*.exe"
     ],
     "catch2TestExplorer.defaultCwd": "${absDirpath}",
+    "cSpell.words": [
+        "nlohmann"
+    ],
 }
