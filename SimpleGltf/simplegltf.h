@@ -118,21 +118,67 @@ void from_json(const nlohmann::json &j, GltfBufferView &data) {
 }
 
 ///
+/// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/schema/accessor.schema.json
+///
+enum class GltfAccessorComponentType {
+  BYTE = 5120,
+  UNSIGNED_BYTE = 5121,
+  SHORT = 5122,
+  UNSIGNED_SHORT = 5123,
+  UNSIGNED_INT = 5125,
+  FLOAT = 5126,
+};
+struct GltfAccessor : GltfChildOfRootProperty {
+  int bufferView = -1;
+  int byteOffset = 0;
+  GltfAccessorComponentType componentType;
+  bool normalized = false;
+  int count = 0;
+  std::string type;
+  std::vector<float> max;
+  std::vector<float> min;
+  // ToDo: sparse
+};
+void to_json(nlohmann::json &j, const GltfAccessor &data) {
+  j = nlohmann::json{json_set(data, name),       json_set(data, bufferView),
+                     json_set(data, byteOffset), json_set(data, componentType),
+                     json_set(data, normalized), json_set(data, count),
+                     json_set(data, type),       json_set(data, max),
+                     json_set(data, min)};
+}
+void from_json(const nlohmann::json &j, GltfAccessor &data) {
+  json_get(j, data, name);
+  json_get(j, data, bufferView);
+  json_get(j, data, byteOffset);
+  json_get(j, data, componentType);
+  json_get(j, data, normalized);
+  json_get(j, data, count);
+  json_get(j, data, type);
+  json_get(j, data, max);
+  json_get(j, data, min);
+}
+
+///
 /// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md
 ///
 struct Gltf {
   GltfAsset asset;
   std::vector<GltfBuffer> buffers;
   std::vector<GltfBufferView> bufferViews;
+  std::vector<GltfAccessor> accessors;
 };
 void to_json(nlohmann::json &j, const Gltf &data) {
   j = nlohmann::json{json_set(data, asset),
-                     json_set(data, buffers, bufferViews)};
+                     json_set(data, buffers),
+                     json_set(data, bufferViews),
+                     json_set(data, accessors)
+                     };
 }
 void from_json(const nlohmann::json &j, Gltf &data) {
   json_get(j, data, asset);
   json_get(j, data, buffers);
   json_get(j, data, bufferViews);
+  json_get(j, data, accessors);
 }
 
 #undef json_get
