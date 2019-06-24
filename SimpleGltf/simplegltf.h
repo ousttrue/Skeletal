@@ -42,6 +42,8 @@ static void find_and_set(const nlohmann::json &j, std::string_view key,
 }
 #define json_get(json, obj, prop)                                              \
   { find_and_set(json, #prop, obj.prop); }
+#define json_set(obj, prop)                                                    \
+  { #prop, obj.prop }
 
 ///
 /// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/schema/asset.schema.json
@@ -65,21 +67,76 @@ void from_json(const nlohmann::json &j, GltfAsset &data) {
   json_get(j, data, minVersion);
 }
 
+struct GltfChildOfRootProperty {
+  std::string name;
+};
+
+///
+/// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/schema/buffer.schema.json
+///
+struct GltfBuffer : GltfChildOfRootProperty {
+  std::string uri;
+  int byteLength = 0;
+};
+void to_json(nlohmann::json &j, const GltfBuffer &data) {
+  j = nlohmann::json{
+      {"name", data.name}, {"uri", data.uri}, {"byteLength", data.byteLength}};
+}
+void from_json(const nlohmann::json &j, GltfBuffer &data) {
+  json_get(j, data, name);
+  json_get(j, data, uri);
+  json_get(j, data, byteLength);
+}
+
+///
+/// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/schema/bufferView.schema.json
+///
+enum class GltfBufferViewTargetType {
+  NONE = 0,
+  ARRAY_BUFFER = 34962,
+  ELEMENT_ARRAY_BUFFER = 34963,
+};
+struct GltfBufferView : GltfChildOfRootProperty {
+  int buffer = -1;
+  int byteOffset = 0;
+  int byteLength = 0;
+  int byteStride = 0;
+  GltfBufferViewTargetType target = GltfBufferViewTargetType::NONE;
+};
+void to_json(nlohmann::json &j, const GltfBufferView &data) {
+  j = nlohmann::json{json_set(data, name),       json_set(data, buffer),
+                     json_set(data, byteOffset), json_set(data, byteLength),
+                     json_set(data, byteStride), json_set(data, target)};
+}
+void from_json(const nlohmann::json &j, GltfBufferView &data) {
+  json_get(j, data, name);
+  json_get(j, data, buffer);
+  json_get(j, data, byteOffset);
+  json_get(j, data, byteLength);
+  json_get(j, data, byteStride);
+  json_get(j, data, target);
+}
+
 ///
 /// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md
 ///
 struct Gltf {
   GltfAsset asset;
+  std::vector<GltfBuffer> buffers;
+  std::vector<GltfBufferView> bufferViews;
 };
 void to_json(nlohmann::json &j, const Gltf &data) {
-  j = nlohmann::json{{"asset", data.asset}};
+  j = nlohmann::json{json_set(data, asset),
+                     json_set(data, buffers, bufferViews)};
 }
 void from_json(const nlohmann::json &j, Gltf &data) {
-  // find_and_set(j, "asset", data.asset);
   json_get(j, data, asset);
+  json_get(j, data, buffers);
+  json_get(j, data, bufferViews);
 }
 
 #undef json_get
+#undef json_set
 
 ///
 /// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#glb-file-format-specification
