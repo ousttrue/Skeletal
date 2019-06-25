@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string_view>
 #include <tuple>
+#include <map>
 
 namespace simple_gltf {
 
@@ -158,6 +159,61 @@ void from_json(const nlohmann::json &j, GltfAccessor &data) {
   json_get(j, data, min);
 }
 
+struct GltfAttributes {};
+void to_json(nlohmann::json &j, const GltfAttributes &data) {}
+void from_json(const nlohmann::json &j, GltfAttributes &data) {}
+
+enum class GltfTopologyType {
+  POINTS = 0,
+  LINES = 1,
+  LINE_LOOP = 2,
+  LINE_STRIP = 3,
+  TRIANGLES = 4,
+  TRIANGLE_STRIP = 5,
+  TRIANGLE_FAN = 6,
+};
+
+///
+/// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/schema/mesh.primitive.schema.json
+///
+struct GltfPrimitive {
+//   GltfAttributes attributes;
+  std::map<std::string, int> attributes;
+  int indices = -1;
+  int material = -1;
+  GltfTopologyType mode = GltfTopologyType::TRIANGLES;
+  std::vector<int> targets;
+};
+void to_json(nlohmann::json &j, const GltfPrimitive &data) {
+  j = nlohmann::json{json_set(data, attributes), json_set(data, indices),
+                     json_set(data, material), json_set(data, mode),
+                     json_set(data, targets)};
+}
+void from_json(const nlohmann::json &j, GltfPrimitive &data) {
+  json_get(j, data, attributes);
+  json_get(j, data, indices);
+  json_get(j, data, material);
+  json_get(j, data, mode);
+  json_get(j, data, targets);
+}
+
+///
+/// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/schema/mesh.schema.json
+///
+struct GltfMesh : GltfChildOfRootProperty {
+  std::vector<GltfPrimitive> primitives;
+  std::vector<float> weights;
+};
+void to_json(nlohmann::json &j, const GltfMesh &data) {
+  j = nlohmann::json{json_set(data, name), json_set(data, primitives),
+                     json_set(data, weights)};
+}
+void from_json(const nlohmann::json &j, GltfMesh &data) {
+  json_get(j, data, name);
+  json_get(j, data, primitives);
+  json_get(j, data, weights);
+}
+
 ///
 /// https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md
 ///
@@ -166,19 +222,19 @@ struct Gltf {
   std::vector<GltfBuffer> buffers;
   std::vector<GltfBufferView> bufferViews;
   std::vector<GltfAccessor> accessors;
+  std::vector<GltfMesh> meshes;
 };
 void to_json(nlohmann::json &j, const Gltf &data) {
-  j = nlohmann::json{json_set(data, asset),
-                     json_set(data, buffers),
-                     json_set(data, bufferViews),
-                     json_set(data, accessors)
-                     };
+  j = nlohmann::json{json_set(data, asset), json_set(data, buffers),
+                     json_set(data, bufferViews), json_set(data, accessors),
+                     json_set(data, meshes)};
 }
 void from_json(const nlohmann::json &j, Gltf &data) {
   json_get(j, data, asset);
   json_get(j, data, buffers);
   json_get(j, data, bufferViews);
   json_get(j, data, accessors);
+  json_get(j, data, meshes);
 }
 
 #undef json_get
