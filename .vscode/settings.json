@@ -4,6 +4,10 @@
     ],
     "catch2TestExplorer.defaultCwd": "${absDirpath}",
     "cSpell.words": [
-        "nlohmann"
+        "CMAKE",
+        "LOGD",
+        "nlohmann",
+        "plog",
+        "vcpkg"
     ],
 }
