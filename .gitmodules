@@ -1,6 +1,3 @@
-[submodule "dependencies/glTF-Sample-Models"]
-	path = dependencies/glTF-Sample-Models
-	url = https://github.com/KhronosGroup/glTF-Sample-Models.git
 [submodule "dependencies/simplegltf"]
 	path = dependencies/simplegltf
 	url = git@github.com:ousttrue/simplegltf.git
