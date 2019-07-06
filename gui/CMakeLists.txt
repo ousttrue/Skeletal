@@ -17,6 +17,8 @@ FILE(GLOB SRC
     ${DEPENDENCIES}/imgui/stb_truetype.h
     ${DEPENDENCIES}/imgui/examples/imgui_impl_opengl3.h
     ${DEPENDENCIES}/imgui/examples/imgui_impl_opengl3.cpp
+    ${DEPENDENCIES}/imgui/examples/imgui_impl_win32.h
+    ${DEPENDENCIES}/imgui/examples/imgui_impl_win32.cpp
     ${DEPENDENCIES}/ImGuizmo/*.h
     ${DEPENDENCIES}/ImGuizmo/*.cpp
 	) 

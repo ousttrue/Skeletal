@@ -1,6 +1,7 @@
 #include "gui.h"
 #include <imgui.h>
 #include <examples/imgui_impl_opengl3.h>
+#include <examples/imgui_impl_win32.h>
 const char *glsl_version = "#version 300 es";
 
 namespace agv
@@ -103,18 +104,20 @@ void GUI::SetScreenSize(int w, int h)
     io.DisplaySize = ImVec2((float)w, (float)h);
 }
 
-void GUI::Begin(float deltaSeconds)
+void GUI::Begin(HWND hWnd, float deltaSeconds)
 {
     if (!m_initialized)
     {
         //ImGui_ImplOpenGL3_CreateFontsTexture();
 
         ImGui_ImplOpenGL3_Init(glsl_version);
+        ImGui_ImplWin32_Init(hWnd);
         m_initialized = true;
     }
 
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplWin32_NewFrame();
 
     ImGuiIO &io = ImGui::GetIO();
     IM_ASSERT(io.Fonts->IsBuilt());

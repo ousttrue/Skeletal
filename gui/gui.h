@@ -1,3 +1,5 @@
+#include <Windows.h>
+
 namespace agv::gui
 {
 
@@ -24,7 +26,7 @@ public:
 
     void SetScreenSize(int w, int h);
 
-    void Begin(float deltaSeconds);
+    void Begin(HWND hWnd, float deltaSeconds);
     void End();
 };
 

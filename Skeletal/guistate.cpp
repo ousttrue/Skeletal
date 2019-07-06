@@ -6,6 +6,7 @@
 #include <ImGuizmo.h>
 #include <memory>
 #include <Windows.h>
+#include "addon.h"
 
 static std::wstring OpenDialog()
 {
@@ -340,4 +341,6 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
         ImGui::EndChild();
         ImGui::End();
     }
+
+    AddOn();
 }
