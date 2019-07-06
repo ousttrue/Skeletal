@@ -76,9 +76,12 @@ struct NodeDrawer
         // clear
         m_clicked = 0;
 
+        // indent
+        ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, ImGui::GetFontSize());
         DrawRecursive(node);
+        ImGui::PopStyleVar();
 
-        if(m_clicked)
+        if (m_clicked)
         {
             // update selection
             if (!ImGui::GetIO().KeyCtrl)
