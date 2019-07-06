@@ -45,7 +45,7 @@ struct NodeTreeDrawer
     {
         // Disable the default open on single-click behavior and pass in Selected flag according to our selection state.
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-        if (m_selection.find(node->get().GetID()) != m_selection.end())
+        if (m_selection.find(node->GetID()) != m_selection.end())
         {
             node_flags |= ImGuiTreeNodeFlags_Selected;
         }
@@ -55,8 +55,8 @@ struct NodeTreeDrawer
         {
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen; // ImGuiTreeNodeFlags_Bullet
         }
-        bool isOpen = ImGui::TreeNodeEx((void *)(int64_t)node->get().GetID(),
-                                        node_flags, "%s", node->get().GetName().c_str());
+        bool isOpen = ImGui::TreeNodeEx((void *)(int64_t)node->GetID(),
+                                        node_flags, "%s", node->GetName().c_str());
         if (ImGui::IsItemClicked())
         {
             m_clicked = node;
@@ -97,7 +97,7 @@ struct NodeTreeDrawer
             {
                 m_selection.clear();
             }
-            m_selection[m_clicked->get().GetID()] = m_clicked;
+            m_selection[m_clicked->GetID()] = m_clicked;
         }
     }
 };
@@ -287,9 +287,9 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
                 for (int i = 0; i < model->Nodes.size(); ++i)
                 {
                     auto &node = model->Nodes[i];
-                    ImGui::PushID(node->get().GetID());
+                    ImGui::PushID(node->GetID());
 
-                    bool isOpen = ImGui::TreeNode("%s", node->get().GetName().c_str());
+                    bool isOpen = ImGui::TreeNode("%s", node->GetName().c_str());
                     ImGui::NextColumn();
                     if (isOpen)
                     {

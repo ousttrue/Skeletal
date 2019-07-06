@@ -6,7 +6,7 @@
 namespace agv {
 	namespace scene {
 
-		typedef dxm::Tree<class NodeValue> Node;
+		class Node;
 		class INodeAnimation
 		{
 		public:

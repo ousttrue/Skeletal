@@ -20,7 +20,7 @@ namespace agv {
 
 
 	namespace scene {
-		typedef dxm::Tree<class NodeValue> Node;
+		class Node;
 		class OrbitMover : public IMouseObserver
 		{
 			std::shared_ptr<Node> m_node;

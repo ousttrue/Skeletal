@@ -10,7 +10,7 @@ namespace scene
 {
 
 Model::Model()
-    : Root(new Node("__root__"))
+    : Root(Node::Create("__root__"))
 {
 }
 
@@ -18,7 +18,7 @@ void Model::SetTime(const AnimationTime &time)
 {
     for (auto &node : Nodes)
     {
-        auto &animation = node->get().Animation;
+        auto &animation = node->Animation;
         if (animation)
         {
             animation->Update(&*node, time);
@@ -48,7 +48,7 @@ std::shared_ptr<Model> Model::Load(const simplegltf::Storage &storage)
 
     for (auto &gltfNode : gltf.nodes)
     {
-        model->Nodes.push_back(LoadNode(storage, gltfNode));
+        model->Nodes.push_back(Node::Load(storage, gltfNode));
     }
 
     // build tree
@@ -59,7 +59,7 @@ std::shared_ptr<Model> Model::Load(const simplegltf::Storage &storage)
 
         if (gltfNode.mesh >= 0)
         {
-            node->get().MeshGroup = model->Meshes[gltfNode.mesh];
+            node->MeshGroup = model->Meshes[gltfNode.mesh];
         }
 
         for (auto childIndex : gltf.nodes[i].children)

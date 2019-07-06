@@ -14,7 +14,7 @@ namespace scene
 class Texture;
 class Material;
 class MeshGroup;
-typedef dxm::Tree<class NodeValue> Node;
+class Node;
 class Model
 {
 public:

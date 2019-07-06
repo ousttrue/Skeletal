@@ -220,7 +220,7 @@ void GLES3Renderer::Resize(int w, int h)
 
 void GLES3Renderer::DrawNode(const agv::scene::ICamera *camera, const agv::scene::Node *cameraNode, const agv::scene::Node *node)
 {
-    auto &meshGroup = node->get().MeshGroup;
+    auto &meshGroup = node->MeshGroup;
     if (meshGroup)
     {
         for (auto &mesh : meshGroup->Meshes)
