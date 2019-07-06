@@ -75,6 +75,15 @@ struct GLES3RendererImpl
 
     /// texture
     std::unordered_map<uint32_t, std::shared_ptr<GLES3Texture>> m_texture_map;
+    void* GetTexture(uint32_t id)const
+    {
+        auto found = m_texture_map.find(id);
+        if (found != m_texture_map.end())
+        {
+            return (void*)(int64_t)found->second->GetGLValue();
+        }
+        return nullptr;
+    }
     std::shared_ptr<GLES3Texture> GetOrCreateTexture(const agv::scene::Texture *pTexture)
     {
         auto found = m_texture_map.find(pTexture->GetID());
@@ -294,6 +303,11 @@ void GLES3Renderer::DrawModel(const agv::scene::ICamera *camera, const agv::scen
     {
         DrawNode(camera, cameraNode, &*node);
     }
+}
+
+void *GLES3Renderer::GetTexture(uint32_t id) const
+{
+    return m_impl->GetTexture(id);
 }
 
 } // namespace renderer

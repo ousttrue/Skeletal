@@ -1,6 +1,8 @@
 #include "guistate.h"
 #include <scene.h>
+#include <gles3renderer.h>
 #include <imgui.h>
+#include <imgui_widgets.cpp>
 #include <memory>
 #include <Windows.h>
 
@@ -51,7 +53,7 @@ static void DrawNodeRecursive(const std::shared_ptr<agv::scene::Node> &node)
 }
 
 
-void GuiState::Update(agv::scene::Scene *scene)
+void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *renderer)
 {
     ImGui::Begin("scene", nullptr, ImGuiWindowFlags_MenuBar);
     {
@@ -106,6 +108,8 @@ void GuiState::Update(agv::scene::Scene *scene)
                     bool isOpen = ImGui::TreeNode("%s", texture->GetName().c_str());
                     if(isOpen)
                     {
+                        // draw image
+                        ImGui::Image(renderer->GetTexture(texture->GetID()), ImVec2(100, 100));
                         ImGui::TreePop();
                     }
                     ImGui::PopID();

@@ -1,16 +1,24 @@
 #pragma
 #include <string>
 
-namespace agv::scene
+namespace agv
+{
+namespace scene
 {
 class Scene;
+}
+namespace renderer
+{
+class GLES3Renderer;
+}
 
-} // namespace agv::scene
+} // namespace agv
 
 struct GuiState
 {
     bool loggerOpen = true;
     std::string logger;
 
-    void Update(class agv::scene::Scene *scene);
+    void Update(agv::scene::Scene *scene,
+                agv::renderer::GLES3Renderer *renderer);
 };

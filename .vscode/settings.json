@@ -5,8 +5,10 @@
     "catch2TestExplorer.defaultCwd": "${absDirpath}",
     "cSpell.words": [
         "CMAKE",
+        "Depthf",
         "ERASEBKGND",
         "GLES",
+        "GLEXT",
         "LBUTTONDOWN",
         "LBUTTONUP",
         "LOGD",
@@ -24,6 +26,7 @@
         "nlohmann",
         "plog",
         "simplegltf",
+        "stbi",
         "vcpkg"
     ],
     "files.associations": {

@@ -23,6 +23,8 @@ public:
     void Resize(int w, int h);
     void Draw(agv::scene::Scene *pScene);
 
+    void *GetTexture(uint32_t id) const;
+
 private:
     void DrawNode(const agv::scene::ICamera *camera, const agv::scene::Node *cameraNode, const agv::scene::Node *node);
     void DrawModel(const agv::scene::ICamera *camera, const agv::scene::Node *cameraNode, agv::scene::Model *pModel);

@@ -118,7 +118,7 @@ void GUI::Begin(float deltaSeconds)
 
     ImGuiIO &io = ImGui::GetIO();
     IM_ASSERT(io.Fonts->IsBuilt());
-    io.DeltaTime = deltaSeconds;
+    io.DeltaTime = deltaSeconds>0 ? deltaSeconds : 0.001f;
 
     ImGui::NewFrame();
 }
