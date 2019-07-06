@@ -6,7 +6,6 @@
 #include <memory>
 #include <Windows.h>
 
-
 static std::wstring OpenDialog()
 {
     OPENFILENAME ofn;        // common dialog box structure
@@ -34,24 +33,50 @@ static std::wstring OpenDialog()
     return szFile;
 }
 
-
-static void DrawNodeRecursive(const std::shared_ptr<agv::scene::Node> &node)
+struct NodeDrawer
 {
-    ImGui::PushID(&node);
-    bool isOpen = ImGui::TreeNode("%s", node->GetName().c_str());
-    if (isOpen)
-    {
+    // int selection_mask = (1 << 2); // Dumb representation of what may be user-side selection state. You may carry selection state inside or outside your objects in whatever format you see fit.
+    std::unordered_map<uint32_t, bool> m_selection;
 
-        for (auto &child : node->GetChildren())
+    int node_clicked = -1; // Temporary storage of what node we have clicked to process selection at the end of the loop. May be a pointer to your own node type, etc.
+
+    void DrawRecursive(const std::shared_ptr<agv::scene::Node> &node)
+    {
+        // Disable the default open on single-click behavior and pass in Selected flag according to our selection state.
+        ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+        if (m_selection.find(node->GetID()) != m_selection.end())
         {
-            DrawNodeRecursive(child);
+            node_flags |= ImGuiTreeNodeFlags_Selected;
         }
 
-        ImGui::TreePop();
-    }
-    ImGui::PopID();
-}
+        // ImGui::PushID(&node);
+        auto hasChild = !node->GetChildren().empty();
+        if (!hasChild)
+        {
+            node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen; // ImGuiTreeNodeFlags_Bullet
+        }
+        bool isOpen = ImGui::TreeNodeEx((void *)(int64_t)node->GetID(), node_flags, "%s", node->GetName().c_str());
+        // bool isOpen = ImGui::TreeNode("%s", node->GetName().c_str());
+        if (hasChild && isOpen)
+        {
+            for (auto &child : node->GetChildren())
+            {
+                DrawRecursive(child);
+            }
 
+            ImGui::TreePop();
+        }
+        // ImGui::PopID();
+    }
+
+    void Draw(const std::shared_ptr<agv::scene::Node> &node)
+    {
+        // clear
+        node_clicked = -1;
+        DrawRecursive(node);
+    }
+};
+static NodeDrawer m_tree;
 
 void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *renderer)
 {
@@ -81,9 +106,11 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
         auto model = scene->GetModel();
         if (model)
         {
+
             for (auto &node : model->Root->GetChildren())
             {
-                DrawNodeRecursive(node);
+                m_tree.Draw(node);
+                // DrawNodeRecursive(node);
             }
         }
 
@@ -106,7 +133,7 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
                     auto &texture = textures[i];
                     ImGui::PushID(texture->GetID());
                     bool isOpen = ImGui::TreeNode("%s", texture->GetName().c_str());
-                    if(isOpen)
+                    if (isOpen)
                     {
                         // draw image
                         ImGui::Image(renderer->GetTexture(texture->GetID()), ImVec2(100, 100));
@@ -126,7 +153,7 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
                     auto &material = materials[i];
                     ImGui::PushID(material->GetID());
                     bool isOpen = ImGui::TreeNode("%s", material->GetName().c_str());
-                    if(isOpen)
+                    if (isOpen)
                     {
                         ImGui::TreePop();
                     }
@@ -144,7 +171,7 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
                     auto &mesh = meshes[i];
                     ImGui::PushID(mesh->GetID());
                     bool isOpen = ImGui::TreeNode("%s", mesh->GetName().c_str());
-                    if(isOpen)
+                    if (isOpen)
                     {
                         ImGui::TreePop();
                     }
