@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include "dxm.h"
 
 
 namespace agv {
@@ -19,7 +20,7 @@ namespace agv {
 
 
 	namespace scene {
-		class Node;
+		typedef dxm::Tree<class NodeValue> Node;
 		class OrbitMover : public IMouseObserver
 		{
 			std::shared_ptr<Node> m_node;

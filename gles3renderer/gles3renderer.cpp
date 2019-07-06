@@ -220,7 +220,7 @@ void GLES3Renderer::Resize(int w, int h)
 
 void GLES3Renderer::DrawNode(const agv::scene::ICamera *camera, const agv::scene::Node *cameraNode, const agv::scene::Node *node)
 {
-    auto meshGroup = node->MeshGroup;
+    auto &meshGroup = node->get().MeshGroup;
     if (meshGroup)
     {
         for (auto &mesh : meshGroup->Meshes)
@@ -247,13 +247,11 @@ void GLES3Renderer::DrawNode(const agv::scene::ICamera *camera, const agv::scene
 
                     {
                         // glm::mat4 mvp = projection * view * model;
-                        auto m = DirectX::XMLoadFloat4x4(&model);
-                        auto v = DirectX::XMLoadFloat4x4(&view);
-                        auto p = DirectX::XMLoadFloat4x4(&projection);
+                        auto m = model.Load();
+                        auto v = view.Load();
+                        auto p = projection.Load();
                         auto _mvp = DirectX::XMMatrixMultiply(DirectX::XMMatrixMultiply(m, v), p);
-                        DirectX::XMFLOAT4X4 mvp;
-                        DirectX::XMStoreFloat4x4(&mvp, _mvp);
-                        shader->SetUniformValue("MVPMatrix", mvp);
+                        shader->SetUniformValue("MVPMatrix", dxm::Matrix(_mvp));
                     }
 
                     // set texture

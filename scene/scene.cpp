@@ -28,14 +28,14 @@ void Scene::Setup()
         auto axis = std::make_shared<Node>("_axis");
         auto mesh = Mesh::CreateAxis(grid_edge);
         mesh->WholeSubmesh(m_gizmoMaterial);
-        axis->MeshGroup = MeshGroup::Create(mesh);
+        axis->get().MeshGroup = MeshGroup::Create(mesh);
         m_gizmos.push_back(axis);
     }
     {
         auto grid = std::make_shared<Node>("_grid");
         auto mesh = Mesh::CreateGrid(grid_size, grid_count);
         mesh->WholeSubmesh(m_gizmoMaterial);
-        grid->MeshGroup = MeshGroup::Create(mesh);
+        grid->get().MeshGroup = MeshGroup::Create(mesh);
         m_gizmos.push_back(grid);
     }
 }
@@ -45,8 +45,8 @@ void Scene::CreateDefaultScene()
     auto node = std::make_shared<Node>("_triangle");
     auto mesh = Mesh::CreateSampleTriangle(1.0f);
     mesh->WholeSubmesh(m_gizmoMaterial);
-    node->MeshGroup = MeshGroup::Create(mesh);
-    node->Animation = std::make_shared<NodeRotation>(50.0f);
+    node->get().MeshGroup = MeshGroup::Create(mesh);
+    node->get().Animation = std::make_shared<NodeRotation>(50.0f);
     m_model = std::make_shared<Model>();
     m_model->Nodes.push_back(node);
     m_model->Root->AddChild(node);

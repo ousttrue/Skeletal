@@ -154,14 +154,14 @@ uint32_t GLES3Shader::GetUniformLocation(const std::string &name)
     return glGetUniformLocation(m_program, name.c_str());
 }
 
-void GLES3Shader::SetUniformValue(uint32_t location, const DirectX::XMFLOAT4X4 &m)
+void GLES3Shader::SetUniformValue(uint32_t location, const dxm::Matrix &m)
 {
     if (location < 0)
         return;
-    glUniformMatrix4fv(location, 1, GL_FALSE, &m._11);
+    glUniformMatrix4fv(location, 1, GL_FALSE, m.data());
 }
 
-void GLES3Shader::SetUniformValue(const std::string &name, const DirectX::XMFLOAT4X4 &m)
+void GLES3Shader::SetUniformValue(const std::string &name, const dxm::Matrix &m)
 {
     auto location = GetUniformLocation(name);
     SetUniformValue(location, m);

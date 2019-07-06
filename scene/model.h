@@ -3,6 +3,8 @@
 #include <vector>
 #include <simplegltf/simplegltf.h>
 #include "animation_time.h"
+#include "dxm.h"
+
 
 namespace agv
 {
@@ -12,7 +14,7 @@ namespace scene
 class Texture;
 class Material;
 class MeshGroup;
-class Node;
+typedef dxm::Tree<class NodeValue> Node;
 class Model
 {
 public:

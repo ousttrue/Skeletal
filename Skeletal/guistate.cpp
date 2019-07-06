@@ -45,17 +45,18 @@ struct NodeTreeDrawer
     {
         // Disable the default open on single-click behavior and pass in Selected flag according to our selection state.
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-        if (m_selection.find(node->GetID()) != m_selection.end())
+        if (m_selection.find(node->get().GetID()) != m_selection.end())
         {
             node_flags |= ImGuiTreeNodeFlags_Selected;
         }
 
-        auto hasChild = !node->GetChildren().empty();
+        auto hasChild = node->GetChildCount();
         if (!hasChild)
         {
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen; // ImGuiTreeNodeFlags_Bullet
         }
-        bool isOpen = ImGui::TreeNodeEx((void *)(int64_t)node->GetID(), node_flags, "%s", node->GetName().c_str());
+        bool isOpen = ImGui::TreeNodeEx((void *)(int64_t)node->get().GetID(),
+                                        node_flags, "%s", node->get().GetName().c_str());
         if (ImGui::IsItemClicked())
         {
             m_clicked = node;
@@ -63,7 +64,7 @@ struct NodeTreeDrawer
 
         if (hasChild && isOpen)
         {
-            for (auto &child : node->GetChildren())
+            for (auto &child : *node)
             {
                 DrawRecursive(child);
             }
@@ -96,16 +97,16 @@ struct NodeTreeDrawer
             {
                 m_selection.clear();
             }
-            m_selection[m_clicked->GetID()] = m_clicked;
+            m_selection[m_clicked->get().GetID()] = m_clicked;
         }
     }
 };
 static NodeTreeDrawer m_tree;
 
 static void EditTransform(
-    const DirectX::XMFLOAT4X4 &projection,
-    const DirectX::XMFLOAT4X4 &view,
-    DirectX::XMFLOAT4X4 *pM)
+    const dxm::Matrix &projection,
+    const dxm::Matrix &view,
+    dxm::Matrix *pM)
 {
     static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
     static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
@@ -124,11 +125,11 @@ static void EditTransform(
     if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
         mCurrentGizmoOperation = ImGuizmo::SCALE;
     float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-    ImGuizmo::DecomposeMatrixToComponents(&pM->_11, matrixTranslation, matrixRotation, matrixScale);
+    ImGuizmo::DecomposeMatrixToComponents(pM->data(), matrixTranslation, matrixRotation, matrixScale);
     ImGui::InputFloat3("Tr", matrixTranslation, 3);
     ImGui::InputFloat3("Rt", matrixRotation, 3);
     ImGui::InputFloat3("Sc", matrixScale, 3);
-    ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, &pM->_11);
+    ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, pM->data());
 
     if (mCurrentGizmoOperation != ImGuizmo::SCALE)
     {
@@ -161,8 +162,8 @@ static void EditTransform(
     }
     ImGuiIO &io = ImGui::GetIO();
     ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-    ImGuizmo::Manipulate(&view._11, &projection._11,
-                         mCurrentGizmoOperation, mCurrentGizmoMode, &pM->_11, NULL,
+    ImGuizmo::Manipulate(view.data(), projection.data(),
+                         mCurrentGizmoOperation, mCurrentGizmoMode, pM->data(), NULL,
                          useSnap ? &snap.x : NULL);
 }
 
@@ -286,9 +287,9 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
                 for (int i = 0; i < model->Nodes.size(); ++i)
                 {
                     auto &node = model->Nodes[i];
-                    ImGui::PushID(node->GetID());
+                    ImGui::PushID(node->get().GetID());
 
-                    bool isOpen = ImGui::TreeNode("%s", node->GetName().c_str());
+                    bool isOpen = ImGui::TreeNode("%s", node->get().GetName().c_str());
                     ImGui::NextColumn();
                     if (isOpen)
                     {

@@ -15,6 +15,11 @@ class ObjectBase
     uint32_t m_unique_id = -1;
     std::string m_name;
 
+    // noncopyable
+    ObjectBase() = default;
+    ObjectBase(const ObjectBase&) = delete;
+    ObjectBase& operator=(const ObjectBase&) = delete;
+
 protected:
     ObjectBase(const std::string &name)
         : m_name(name)

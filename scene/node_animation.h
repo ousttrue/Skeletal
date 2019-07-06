@@ -1,12 +1,12 @@
 #pragma once
 #include "animation_time.h"
-#include <glm/glm.hpp>
+#include "dxm.h"
 
 
 namespace agv {
 	namespace scene {
 
-		class Node;
+		typedef dxm::Tree<class NodeValue> Node;
 		class INodeAnimation
 		{
 		public:
@@ -21,7 +21,7 @@ namespace agv {
 
 		public:
 			NodeRotation(float angularVelocity)
-				: m_angularVelocityRadians(glm::radians<float>(angularVelocity))
+				: m_angularVelocityRadians(DirectX::XMConvertToRadians(angularVelocity))
 			{}
 
 			void Update(Node *pNode, const AnimationTime &time)override;
