@@ -1,13 +1,13 @@
 #include <Windows.h>
 #include <windowsx.h>
-// #include <imgui.h>
 #include "resource.h"
 #include "eglapp.h"
 #include "save_windowplacement.h"
+#include "guistate.h"
 
 #include <gles3renderer.h>
 #include <scene.h>
-// #include <gui.h>
+#include <gui.h>
 
 #include <plog/Log.h>
 #include <plog/Appenders/DebugOutputAppender.h>
@@ -27,8 +27,8 @@ const auto WINDOW_NAME = L"Skeletal";
 ///
 agv::renderer::GLES3Renderer *g_renderer = nullptr;
 agv::scene::Scene *g_scene = nullptr;
-// agv::gui::GUI *g_gui = nullptr;
-std::string g_logger;
+agv::gui::GUI *g_gui = nullptr;
+GuiState g_guiState;
 namespace plog
 {
 template <class Formatter>
@@ -46,7 +46,7 @@ public:
 
         for (auto c : str)
         {
-            m_buffer->push_back(c);
+            m_buffer->push_back(static_cast<char>(c));
         }
     }
 
@@ -118,7 +118,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
         auto h = HIWORD(lParam);
         g_scene->GetCamera()->SetScreenSize(w, h);
         g_renderer->Resize(w, h);
-        // g_gui->SetScreenSize(w, h);
+        g_gui->SetScreenSize(w, h);
         return 0;
     }
 
@@ -135,7 +135,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
         auto x = GET_X_LPARAM(lParam);
         auto y = GET_Y_LPARAM(lParam);
         g_scene->GetMouseObserver()->MouseMove(x, y);
-        // g_gui->MouseMove(x, y);
+        g_gui->MouseMove(x, y);
         return 0;
     }
 
@@ -143,7 +143,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         m_capture.Down(MouseCapture::LEFT, hwnd);
         g_scene->GetMouseObserver()->MouseLeftDown();
-        // g_gui->MouseLeftDown();
+        g_gui->MouseLeftDown();
         return 0;
     }
 
@@ -151,7 +151,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         m_capture.Up(MouseCapture::LEFT);
         g_scene->GetMouseObserver()->MouseLeftUp();
-        // g_gui->MouseLeftUp();
+        g_gui->MouseLeftUp();
         return 0;
     }
 
@@ -159,7 +159,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         m_capture.Down(MouseCapture::MIDDLE, hwnd);
         g_scene->GetMouseObserver()->MouseMiddleDown();
-        // g_gui->MouseMiddleDown();
+        g_gui->MouseMiddleDown();
         return 0;
     }
 
@@ -167,7 +167,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         m_capture.Up(MouseCapture::MIDDLE);
         g_scene->GetMouseObserver()->MouseMiddleUp();
-        // g_gui->MouseMiddleUp();
+        g_gui->MouseMiddleUp();
         return 0;
     }
 
@@ -175,7 +175,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         m_capture.Down(MouseCapture::RIGHT, hwnd);
         g_scene->GetMouseObserver()->MouseRightDown();
-        // g_gui->MouseRightDown();
+        g_gui->MouseRightDown();
         return 0;
     }
 
@@ -183,7 +183,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         m_capture.Up(MouseCapture::RIGHT);
         g_scene->GetMouseObserver()->MouseRightUp();
-        // g_gui->MouseRightUp();
+        g_gui->MouseRightUp();
         return 0;
     }
 
@@ -191,7 +191,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         auto d = GET_WHEEL_DELTA_WPARAM(wParam);
         g_scene->GetMouseObserver()->MouseWheel(d);
-        // g_gui->MouseWheel(d);
+        g_gui->MouseWheel(d);
         return 0;
     }
     }
@@ -228,42 +228,13 @@ static int mainloop(HWND hwnd)
         lastTime = now;
 
         {
-            // g_gui->Begin(delta * 0.001f);
+            g_gui->Begin(delta * 0.001f);
 
             g_scene->Update(now);
-
-            // ImGui::Begin("logger", &loggerOpen);
-            // {
-            //   ImGui::BeginChild("scrolling");
-            //   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 1));
-            //   // if (copy) ImGui::LogToClipboard();
-
-            //   /*
-            //   if (Filter.IsActive())
-            //   {
-            //           const char* buf_begin = Buf.begin();
-            //           const char* line = buf_begin;
-            //           for (int line_no = 0; line != NULL; line_no++)
-            //           {
-            //                   const char* line_end = (line_no < LineOffsets.Size) ?
-            //   buf_begin + LineOffsets[line_no] : NULL; if (Filter.PassFilter(line,
-            //   line_end)) ImGui::TextUnformatted(line, line_end); line = line_end &&
-            //   line_end[1] ? line_end + 1 : NULL;
-            //           }
-            //   }
-            //   else
-            //   */
-            //   { ImGui::TextUnformatted(g_logger.c_str()); }
-
-            //   ImGui::SetScrollHere(1.0f);
-
-            //   ImGui::PopStyleVar();
-            //   ImGui::EndChild();
-            //   ImGui::End();
-            // }
+            g_guiState.Update(g_scene);
 
             g_renderer->Draw(g_scene);
-            // g_gui->End();
+            g_gui->End();
         }
         app.present();
     }
@@ -313,7 +284,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // static plog::DebugOutputAppender<plog::TxtFormatter> debugOutputAppender;
-    static plog::ImGuiAppender<plog::TxtFormatter> appender(&g_logger);
+    static plog::ImGuiAppender<plog::TxtFormatter> appender(&g_guiState.logger);
     plog::init(plog::verbose, &appender);
 
     // setup window
@@ -331,7 +302,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     wndclass.lpszClassName = CLASS_NAME;
     wndclass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
-
     RegisterClassEx(&wndclass);
 
     agv::renderer::ShaderSourceManager::Instance.SetSource(
@@ -342,7 +312,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         agv::scene::ShaderType::unlit,
         to_string(GetResource(hInstance, ID_UNLIT_VS, RESOURCE_TYPE)),
         to_string(GetResource(hInstance, ID_UNLIT_FS, RESOURCE_TYPE)));
-
 
     agv::scene::Scene scene;
 
@@ -360,8 +329,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     agv::renderer::GLES3Renderer renderer;
     g_renderer = &renderer;
 
-    //   agv::gui::GUI gui;
-    //   g_gui = &gui;
+    agv::gui::GUI gui;
+    g_gui = &gui;
 
     LOGD << "CreateWindow";
     HWND hwnd = CreateWindow(CLASS_NAME, WINDOW_NAME, WS_OVERLAPPEDWINDOW,

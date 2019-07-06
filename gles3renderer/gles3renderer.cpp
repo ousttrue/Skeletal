@@ -170,48 +170,23 @@ struct GLES3RendererImpl
 
         vao->Bind();
 
-        auto position = vbo->m_attributes["POSITION"];
+        for (auto kv : shader->AttributeMap)
         {
-            position->Bind();
-            vao->BindSlot(0, position);
+            auto found = vbo->m_attributes.find(kv.first);
+            if (found != vbo->m_attributes.end())
+            {
+                found->second->Bind();
+                vao->BindSlot(kv.second, found->second);
+            }
         }
-
-        {
-            // auto normal = vbo->m_attributes["NORMAL"];
-            // if (normal)
-            // {
-            //     normal->Bind();
-            //     vao->BindSlot(1, normal);
-            // }
-        }
-
-        auto texcoord = vbo->m_attributes["TEXCOORD_0"];
-        if (texcoord)
-        {
-            texcoord->Bind();
-            vao->BindSlot(2, texcoord);
-        }
-
         if (vbo->m_indices)
         {
             vbo->m_indices->Bind();
         }
 
-        vao->Unbind();
-        position->Unbind();
-        if (texcoord)
-        {
-            texcoord->Unbind();
-        }
-
-        {
-            // cleanup
-            if (vbo->m_indices)
-            {
-                vbo->m_indices->Unbind();
-            }
-            position->Unbind();
-        }
+        GLES3VertexArray::Unbind();
+        GLES3VertexBuffer::UnbindIndex();
+        GLES3VertexBuffer::UnbindAttribute();
 
         return vao;
     }

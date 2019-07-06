@@ -38,12 +38,22 @@ void GLES3VertexBuffer::Unbind()
 {
     if (m_isIndex)
     {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        UnbindIndex();
     }
     else
     {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        UnbindAttribute();
     }
+}
+
+void GLES3VertexBuffer::UnbindIndex()
+{
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void GLES3VertexBuffer::UnbindAttribute()
+{
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void GLES3VertexBuffer::BufferData(bool isIndex, const std::byte *values, size_t byteSize, int componentCount)
@@ -107,7 +117,7 @@ void GLES3VertexBufferGroup::Draw(int offset, int count)
     if (m_indices)
     {
         uint64_t offset64 = offset;
-        glDrawElements(m_topology, count, m_indexType, reinterpret_cast<const void*>(offset64));
+        glDrawElements(m_topology, count, m_indexType, reinterpret_cast<const void *>(offset64));
     }
     else
     {

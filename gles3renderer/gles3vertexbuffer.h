@@ -21,6 +21,8 @@ public:
     ~GLES3VertexBuffer();
     void Bind();
     void Unbind();
+    static void UnbindIndex();
+    static void UnbindAttribute();
     void BufferData(bool isIndex, const std::byte *values, size_t byteSize, int componentCount);
     int GetComponentCount() const { return m_componentCount; }
 };

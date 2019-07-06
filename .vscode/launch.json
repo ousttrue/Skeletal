@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/Skeletal/Skeletal.exe",
             "args": [
-
+                "${env:ALICIA}"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/Skeletal",

@@ -1,7 +1,6 @@
 #include "eglapp.h"
 #include <assert.h>
 
-
 EglApp::EglApp(HWND hwnd)
 {
     // m_display
@@ -15,21 +14,21 @@ EglApp::EglApp(HWND hwnd)
 
     // config
     EGLint configAttributes[] =
-    {
-        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
-        EGL_BUFFER_SIZE, 32,
-        EGL_NONE
-    };
+        {
+            EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
+            EGL_BUFFER_SIZE, 32,
+            EGL_DEPTH_SIZE, 24,
+            EGL_STENCIL_SIZE, 8,
+            EGL_NONE};
     EGLConfig config;
     EGLint num_config;
     assert(eglChooseConfig(m_display, configAttributes, &config, 1, &num_config));
 
     // context
     EGLint contextAttributes[] =
-    {
-        EGL_CONTEXT_CLIENT_VERSION, 3,
-        EGL_NONE
-    };
+        {
+            EGL_CONTEXT_CLIENT_VERSION, 3,
+            EGL_NONE};
     EGLContext context = eglCreateContext(m_display, config, NULL, contextAttributes);
     assert(context);
 
@@ -66,4 +65,3 @@ void EglApp::present()
 {
     assert(eglSwapBuffers(m_display, m_surface));
 }
-

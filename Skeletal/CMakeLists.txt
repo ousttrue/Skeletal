@@ -12,11 +12,13 @@ ADD_EXECUTABLE(${PROJECT_NAME} WIN32
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC
     ../gles3renderer
     ../scene
+    ../gui
     ../dependencies/simplegltf
     )
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}
     scene
     gles3renderer
+    gui
     WinMM
 	debug 
 	$ENV{VCPKG_DIR}/installed/x64-windows/debug/lib/libegl.lib

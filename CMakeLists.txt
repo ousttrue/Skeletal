@@ -4,6 +4,7 @@ PROJECT(Skeletal VERSION 0.1.0)
 INCLUDE_DIRECTORIES(
     $ENV{VCPKG_DIR}/installed/x64-windows/include
     dependencies/simplegltf
+    dependencies/imgui
     )
 LINK_DIRECTORIES($ENV{VCPKG_DIR}/installed/x64-windows/lib)
 ADD_DEFINITIONS(
@@ -14,4 +15,4 @@ ADD_COMPILE_OPTIONS(
     /std:c++latest 
     /EHsc
     )
-SUBDIRS(gles3renderer scene Skeletal)
+SUBDIRS(gles3renderer scene gui Skeletal)

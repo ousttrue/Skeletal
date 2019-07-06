@@ -104,6 +104,8 @@ std::shared_ptr<GLES3Shader> GLES3Shader::Create(int shaderType)
         return nullptr;
     }
 
+    auto shader = std::make_shared<GLES3Shader>(program);
+
     // attributes
     {
         GLint nAttribs;
@@ -118,6 +120,7 @@ std::shared_ptr<GLES3Shader> GLES3Shader::Create(int shaderType)
             glGetActiveAttrib(program, i, maxLength, &written, &size, &type, name.data());
             auto location = glGetAttribLocation(program, name.data());
             LOGD << "attrib: " << location << ": " << std::string(name.data());
+            shader->AttributeMap.insert(std::make_pair(std::string(name.data()), location));
         }
     }
 
@@ -138,7 +141,7 @@ std::shared_ptr<GLES3Shader> GLES3Shader::Create(int shaderType)
         }
     }
 
-    return std::make_shared<GLES3Shader>(program);
+    return shader;
 }
 
 void GLES3Shader::Use()
