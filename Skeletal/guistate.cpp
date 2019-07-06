@@ -37,8 +37,7 @@ struct NodeDrawer
 {
     // int selection_mask = (1 << 2); // Dumb representation of what may be user-side selection state. You may carry selection state inside or outside your objects in whatever format you see fit.
     std::unordered_map<uint32_t, bool> m_selection;
-
-    int node_clicked = -1; // Temporary storage of what node we have clicked to process selection at the end of the loop. May be a pointer to your own node type, etc.
+    uint32_t m_clicked = -1;
 
     void DrawRecursive(const std::shared_ptr<agv::scene::Node> &node)
     {
@@ -49,14 +48,17 @@ struct NodeDrawer
             node_flags |= ImGuiTreeNodeFlags_Selected;
         }
 
-        // ImGui::PushID(&node);
         auto hasChild = !node->GetChildren().empty();
         if (!hasChild)
         {
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen; // ImGuiTreeNodeFlags_Bullet
         }
         bool isOpen = ImGui::TreeNodeEx((void *)(int64_t)node->GetID(), node_flags, "%s", node->GetName().c_str());
-        // bool isOpen = ImGui::TreeNode("%s", node->GetName().c_str());
+        if (ImGui::IsItemClicked())
+        {
+            m_clicked = node->GetID();
+        }
+
         if (hasChild && isOpen)
         {
             for (auto &child : node->GetChildren())
@@ -66,14 +68,25 @@ struct NodeDrawer
 
             ImGui::TreePop();
         }
-        // ImGui::PopID();
     }
 
-    void Draw(const std::shared_ptr<agv::scene::Node> &node)
+    void
+    Draw(const std::shared_ptr<agv::scene::Node> &node)
     {
         // clear
-        node_clicked = -1;
+        m_clicked = 0;
+
         DrawRecursive(node);
+
+        if(m_clicked)
+        {
+            // update selection
+            if (!ImGui::GetIO().KeyCtrl)
+            {
+                m_selection.clear();
+            }
+            m_selection[m_clicked] = true;
+        }
     }
 };
 static NodeDrawer m_tree;
