@@ -89,6 +89,20 @@ void Node::SetLocalMatrix(const DirectX::XMMATRIX &vector)
     }
 }
 
+void Node::SetWorldMatrix(const DirectX::XMFLOAT4X4 &m)
+{
+    auto parent = m_parent
+                      ? DirectX::XMLoadFloat4x4(&m_parent->m_worldMatrix)
+                      : DirectX::XMMatrixIdentity();
+    if (m_parent)
+    {
+        auto i = 0;
+    }
+    // DirectX::XMVECTOR det;
+    auto local = DirectX::XMMatrixMultiply(DirectX::XMLoadFloat4x4(&m), DirectX::XMMatrixInverse(nullptr, parent));
+    SetLocalMatrix(local);
+}
+
 std::shared_ptr<Node> Node::Load(const simplegltf::Storage &storage,
                                  const simplegltf::GltfNode &gltfNode)
 {

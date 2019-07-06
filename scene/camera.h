@@ -8,33 +8,45 @@ namespace scene
 class ICamera
 {
 public:
-    virtual void GetMatrix(DirectX::XMFLOAT4X4 *pM) const = 0;
+    virtual const DirectX::XMFLOAT4X4 &GetMatrix() const = 0;
     virtual void SetScreenSize(int w, int h) = 0;
 };
 
 class PerspectiveCamera : public ICamera
 {
-    float m_fovyDegree = 30.0f;
+    float m_fovYDegree = 30.0f;
     float m_aspect = 1.0f;
     float m_near = 0.05f;
     float m_far = 100.0f;
 
+    DirectX::XMFLOAT4X4 m_matrix = {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1};
+
 public:
     PerspectiveCamera()
     {
+        Calc();
     }
 
     void SetScreenSize(int w, int h)
     {
         m_aspect = w / (float)h;
+        Calc();
     }
 
-    void GetMatrix(DirectX::XMFLOAT4X4 *pM) const override
+    void Calc()
     {
-        // return glm::perspective(glm::radians(m_fovyDegree), m_aspect, m_near, m_far);
-		auto m = DirectX::XMMatrixPerspectiveFovRH(DirectX::XMConvertToRadians(m_fovyDegree), m_aspect, m_near, m_far);
-		DirectX::XMStoreFloat4x4(pM, m);
+        auto m = DirectX::XMMatrixPerspectiveFovRH(DirectX::XMConvertToRadians(m_fovYDegree), m_aspect, m_near, m_far);
+        DirectX::XMStoreFloat4x4(&m_matrix, m);
     }
+
+    const DirectX::XMFLOAT4X4 &GetMatrix() const override
+	{
+		return m_matrix;
+	}
 };
 } // namespace scene
 } // namespace agv

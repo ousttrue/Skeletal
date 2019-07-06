@@ -71,6 +71,7 @@ public:
     void SetLocalScale(const DirectX::XMFLOAT3 &s);
     void SetLocalMatrix(const DirectX::XMFLOAT4X4 &m);
     void SetLocalMatrix(const DirectX::XMMATRIX &m);
+    void SetWorldMatrix(const DirectX::XMFLOAT4X4 &m);
     void UpdateMatrix()
     {
         if (m_parent)

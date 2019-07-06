@@ -236,8 +236,7 @@ void GLES3Renderer::DrawNode(const agv::scene::ICamera *camera, const agv::scene
                 {
                     shader->Use();
 
-                    DirectX::XMFLOAT4X4 projection;
-                    camera->GetMatrix(&projection);
+                    auto projection = camera->GetMatrix();
                     shader->SetUniformValue("ProjectionMatrix", projection);
 
                     auto &view = cameraNode->GetWorldMatrix();

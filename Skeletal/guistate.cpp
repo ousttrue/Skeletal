@@ -102,32 +102,73 @@ struct NodeTreeDrawer
 };
 static NodeTreeDrawer m_tree;
 
-struct NodeDrawer
+static void EditTransform(
+    const DirectX::XMFLOAT4X4 &projection,
+    const DirectX::XMFLOAT4X4 &view,
+    DirectX::XMFLOAT4X4 *pM)
 {
-    void Draw(const std::shared_ptr<agv::scene::Node> &node)
+    static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
+    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+    if (ImGui::IsKeyPressed(90))
+        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+    if (ImGui::IsKeyPressed(69))
+        mCurrentGizmoOperation = ImGuizmo::ROTATE;
+    if (ImGui::IsKeyPressed(82)) // r Key
+        mCurrentGizmoOperation = ImGuizmo::SCALE;
+    if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+        mCurrentGizmoOperation = ImGuizmo::ROTATE;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+        mCurrentGizmoOperation = ImGuizmo::SCALE;
+    float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+    ImGuizmo::DecomposeMatrixToComponents(&pM->_11, matrixTranslation, matrixRotation, matrixScale);
+    ImGui::InputFloat3("Tr", matrixTranslation, 3);
+    ImGui::InputFloat3("Rt", matrixRotation, 3);
+    ImGui::InputFloat3("Sc", matrixScale, 3);
+    ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, &pM->_11);
+
+    if (mCurrentGizmoOperation != ImGuizmo::SCALE)
     {
-        ImGui::Text("%s", node->GetName().c_str());
-
-        // auto matrixTranslation = node->GetLocalPosition();
-        // auto matrixRotation = node->GetLocalEuler();
-        // auto matrixScale = node->GetLocalScale();
-        // DirectX::XMFLOAT4X4 m;
-        DirectX::XMFLOAT4X4 m = node->GetLocalMatrix();
-        DirectX::XMFLOAT3 matrixTranslation, matrixRotation, matrixScale;
-        ImGuizmo::DecomposeMatrixToComponents(&m._11, &matrixTranslation.x, &matrixRotation.y, &matrixScale.x);
-        ImGui::InputFloat3("Tr", &matrixTranslation.x, 3);
-        ImGui::InputFloat3("Rt", &matrixRotation.x, 3);
-        ImGui::InputFloat3("Sc", &matrixScale.x, 3);
-
-        ImGuizmo::RecomposeMatrixFromComponents(&matrixTranslation.x, &matrixRotation.x, &matrixScale.x, &m._11);
-
-        // node->SetLocalMatrix(m);
+        if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
+            mCurrentGizmoMode = ImGuizmo::LOCAL;
+        ImGui::SameLine();
+        if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
+            mCurrentGizmoMode = ImGuizmo::WORLD;
     }
-};
-static NodeDrawer m_node;
+    static bool useSnap(false);
+    if (ImGui::IsKeyPressed(83))
+        useSnap = !useSnap;
+    ImGui::Checkbox("", &useSnap);
+    ImGui::SameLine();
+    DirectX::XMFLOAT3 snap = {0, 0, 0};
+    switch (mCurrentGizmoOperation)
+    {
+    case ImGuizmo::TRANSLATE:
+        // snap = config.mSnapTranslation;
+        ImGui::InputFloat3("Snap", &snap.x);
+        break;
+    case ImGuizmo::ROTATE:
+        // snap = config.mSnapRotation;
+        ImGui::InputFloat("Angle Snap", &snap.x);
+        break;
+    case ImGuizmo::SCALE:
+        // snap = config.mSnapScale;
+        ImGui::InputFloat("Scale Snap", &snap.x);
+        break;
+    }
+    ImGuiIO &io = ImGui::GetIO();
+    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+    ImGuizmo::Manipulate(&view._11, &projection._11,
+                         mCurrentGizmoOperation, mCurrentGizmoMode, &pM->_11, NULL,
+                         useSnap ? &snap.x : NULL);
+}
 
 void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *renderer)
 {
+    ImGuizmo::BeginFrame();
     ImGui::Begin("scene", nullptr, ImGuiWindowFlags_MenuBar);
     {
         if (ImGui::BeginMenuBar())
@@ -160,11 +201,15 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
         ImGui::End();
     }
 
+    auto projection = scene->GetCamera()->GetMatrix();
+    auto view = scene->GetCameraNode()->GetWorldMatrix();
     for (auto kv : m_tree.m_selection)
     {
         ImGui::Begin("selected");
         {
-            m_node.Draw(kv.second);
+            auto model = kv.second->GetWorldMatrix();
+            EditTransform(projection, view, &model);
+            kv.second->SetWorldMatrix(model);
             ImGui::End();
         }
         break;
