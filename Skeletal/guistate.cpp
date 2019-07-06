@@ -108,7 +108,7 @@ static void EditTransform(
     DirectX::XMFLOAT4X4 *pM)
 {
     static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
-    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
     if (ImGui::IsKeyPressed(90))
         mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
     if (ImGui::IsKeyPressed(69))
