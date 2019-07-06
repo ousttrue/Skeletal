@@ -1,39 +1,40 @@
 #pragma once
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <DirectXMath.h>
 
+namespace agv
+{
+namespace scene
+{
+class ICamera
+{
+public:
+    virtual void GetMatrix(DirectX::XMFLOAT4X4 *pM) const = 0;
+    virtual void SetScreenSize(int w, int h) = 0;
+};
 
-namespace agv {
-	namespace scene {
-		class ICamera
-		{
-		public:
-			virtual glm::mat4 GetMatrix()const = 0;
-			virtual void SetScreenSize(int w, int h) = 0;
-		};
+class PerspectiveCamera : public ICamera
+{
+    float m_fovyDegree = 30.0f;
+    float m_aspect = 1.0f;
+    float m_near = 0.05f;
+    float m_far = 100.0f;
 
+public:
+    PerspectiveCamera()
+    {
+    }
 
-		class PerspectiveCamera : public ICamera
-		{
-			float m_fovyDegree = 30.0f;
-			float m_aspect = 1.0f;
-			float m_near = 0.05f;
-			float m_far = 100.0f;
+    void SetScreenSize(int w, int h)
+    {
+        m_aspect = w / (float)h;
+    }
 
-		public:
-			PerspectiveCamera()
-			{
-			}
-
-			void SetScreenSize(int w, int h)
-			{
-				m_aspect = w / (float)h;
-			}
-
-			glm::mat4 GetMatrix()const override
-			{
-				return  glm::perspective(glm::radians(m_fovyDegree), m_aspect, m_near, m_far);
-			}
-		};
-	}
-}
+    void GetMatrix(DirectX::XMFLOAT4X4 *pM) const override
+    {
+        // return glm::perspective(glm::radians(m_fovyDegree), m_aspect, m_near, m_far);
+		auto m = DirectX::XMMatrixPerspectiveFovRH(DirectX::XMConvertToRadians(m_fovyDegree), m_aspect, m_near, m_far);
+		DirectX::XMStoreFloat4x4(pM, m);
+    }
+};
+} // namespace scene
+} // namespace agv

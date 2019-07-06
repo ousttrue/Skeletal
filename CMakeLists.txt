@@ -5,6 +5,7 @@ INCLUDE_DIRECTORIES(
     $ENV{VCPKG_DIR}/installed/x64-windows/include
     dependencies/simplegltf
     dependencies/imgui
+    dependencies/ImGuizmo
     )
 LINK_DIRECTORIES($ENV{VCPKG_DIR}/installed/x64-windows/lib)
 ADD_DEFINITIONS(

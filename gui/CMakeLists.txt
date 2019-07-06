@@ -1,22 +1,24 @@
 SET(SUB_NAME gui)
-SET(IMGUI_DIR ../dependencies/imgui)
+SET(DEPENDENCIES ../dependencies)
 
 FILE(GLOB SRC
 	*.cpp
 	*.h
-    ${IMGUI_DIR}/imgui.cpp
-    ${IMGUI_DIR}/imgui.h
-    ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/imgui_widgets.h
-    ${IMGUI_DIR}/imgui_demo.cpp
-    ${IMGUI_DIR}/imgui_draw.cpp
-    ${IMGUI_DIR}/imgui_internal.h
-    ${IMGUI_DIR}/imconfig.h
-    ${IMGUI_DIR}/stb_rect_pack.h
-    ${IMGUI_DIR}/stb_textedit.h
-    ${IMGUI_DIR}/stb_truetype.h
-    ${IMGUI_DIR}/examples/imgui_impl_opengl3.h
-    ${IMGUI_DIR}/examples/imgui_impl_opengl3.cpp
+    ${DEPENDENCIES}/imgui/imgui.cpp
+    ${DEPENDENCIES}/imgui/imgui.h
+    ${DEPENDENCIES}/imgui/imgui_widgets.cpp
+    ${DEPENDENCIES}/imgui/imgui_widgets.h
+    ${DEPENDENCIES}/imgui/imgui_demo.cpp
+    ${DEPENDENCIES}/imgui/imgui_draw.cpp
+    ${DEPENDENCIES}/imgui/imgui_internal.h
+    ${DEPENDENCIES}/imgui/imconfig.h
+    ${DEPENDENCIES}/imgui/stb_rect_pack.h
+    ${DEPENDENCIES}/imgui/stb_textedit.h
+    ${DEPENDENCIES}/imgui/stb_truetype.h
+    ${DEPENDENCIES}/imgui/examples/imgui_impl_opengl3.h
+    ${DEPENDENCIES}/imgui/examples/imgui_impl_opengl3.cpp
+    ${DEPENDENCIES}/ImGuizmo/*.h
+    ${DEPENDENCIES}/ImGuizmo/*.cpp
 	) 
 
 ADD_LIBRARY(${SUB_NAME} 

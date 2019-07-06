@@ -75,12 +75,12 @@ struct GLES3RendererImpl
 
     /// texture
     std::unordered_map<uint32_t, std::shared_ptr<GLES3Texture>> m_texture_map;
-    void* GetTexture(uint32_t id)const
+    void *GetTexture(uint32_t id) const
     {
         auto found = m_texture_map.find(id);
         if (found != m_texture_map.end())
         {
-            return (void*)(int64_t)found->second->GetGLValue();
+            return (void *)(int64_t)found->second->GetGLValue();
         }
         return nullptr;
     }
@@ -236,17 +236,26 @@ void GLES3Renderer::DrawNode(const agv::scene::ICamera *camera, const agv::scene
                 {
                     shader->Use();
 
-                    auto projection = camera->GetMatrix();
+                    DirectX::XMFLOAT4X4 projection;
+                    camera->GetMatrix(&projection);
                     shader->SetUniformValue("ProjectionMatrix", projection);
 
-                    auto view = cameraNode->transform;
+                    auto &view = cameraNode->GetWorldMatrix();
                     shader->SetUniformValue("ViewMatrix", view);
 
-                    auto model = node->transform;
+                    auto &model = node->GetWorldMatrix();
                     shader->SetUniformValue("ModelMatrix", model);
 
-                    glm::mat4 mvp = projection * view * model;
-                    shader->SetUniformValue("MVPMatrix", mvp);
+                    {
+                        // glm::mat4 mvp = projection * view * model;
+                        auto m = DirectX::XMLoadFloat4x4(&model);
+                        auto v = DirectX::XMLoadFloat4x4(&view);
+                        auto p = DirectX::XMLoadFloat4x4(&projection);
+                        auto _mvp = DirectX::XMMatrixMultiply(DirectX::XMMatrixMultiply(m, v), p);
+                        DirectX::XMFLOAT4X4 mvp;
+                        DirectX::XMStoreFloat4x4(&mvp, _mvp);
+                        shader->SetUniformValue("MVPMatrix", mvp);
+                    }
 
                     // set texture
                     material->Set();

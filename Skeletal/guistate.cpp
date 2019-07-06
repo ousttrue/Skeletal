@@ -3,6 +3,7 @@
 #include <gles3renderer.h>
 #include <imgui.h>
 #include <imgui_widgets.cpp>
+#include <ImGuizmo.h>
 #include <memory>
 #include <Windows.h>
 
@@ -33,11 +34,12 @@ static std::wstring OpenDialog()
     return szFile;
 }
 
-struct NodeDrawer
+struct NodeTreeDrawer
 {
     // int selection_mask = (1 << 2); // Dumb representation of what may be user-side selection state. You may carry selection state inside or outside your objects in whatever format you see fit.
-    std::unordered_map<uint32_t, bool> m_selection;
-    uint32_t m_clicked = -1;
+    std::shared_ptr<agv::scene::Node> m_root;
+    std::unordered_map<uint32_t, std::shared_ptr<agv::scene::Node>> m_selection;
+    std::shared_ptr<agv::scene::Node> m_clicked;
 
     void DrawRecursive(const std::shared_ptr<agv::scene::Node> &node)
     {
@@ -56,7 +58,7 @@ struct NodeDrawer
         bool isOpen = ImGui::TreeNodeEx((void *)(int64_t)node->GetID(), node_flags, "%s", node->GetName().c_str());
         if (ImGui::IsItemClicked())
         {
-            m_clicked = node->GetID();
+            m_clicked = node;
         }
 
         if (hasChild && isOpen)
@@ -74,7 +76,13 @@ struct NodeDrawer
     Draw(const std::shared_ptr<agv::scene::Node> &node)
     {
         // clear
-        m_clicked = 0;
+        if (node != m_root)
+        {
+            // clear selection
+            m_root = node;
+            m_selection.clear();
+        }
+        m_clicked = nullptr;
 
         // indent
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, ImGui::GetFontSize());
@@ -88,11 +96,35 @@ struct NodeDrawer
             {
                 m_selection.clear();
             }
-            m_selection[m_clicked] = true;
+            m_selection[m_clicked->GetID()] = m_clicked;
         }
     }
 };
-static NodeDrawer m_tree;
+static NodeTreeDrawer m_tree;
+
+struct NodeDrawer
+{
+    void Draw(const std::shared_ptr<agv::scene::Node> &node)
+    {
+        ImGui::Text("%s", node->GetName().c_str());
+
+        // auto matrixTranslation = node->GetLocalPosition();
+        // auto matrixRotation = node->GetLocalEuler();
+        // auto matrixScale = node->GetLocalScale();
+        // DirectX::XMFLOAT4X4 m;
+        DirectX::XMFLOAT4X4 m = node->GetLocalMatrix();
+        DirectX::XMFLOAT3 matrixTranslation, matrixRotation, matrixScale;
+        ImGuizmo::DecomposeMatrixToComponents(&m._11, &matrixTranslation.x, &matrixRotation.y, &matrixScale.x);
+        ImGui::InputFloat3("Tr", &matrixTranslation.x, 3);
+        ImGui::InputFloat3("Rt", &matrixRotation.x, 3);
+        ImGui::InputFloat3("Sc", &matrixScale.x, 3);
+
+        ImGuizmo::RecomposeMatrixFromComponents(&matrixTranslation.x, &matrixRotation.x, &matrixScale.x, &m._11);
+
+        // node->SetLocalMatrix(m);
+    }
+};
+static NodeDrawer m_node;
 
 void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *renderer)
 {
@@ -122,15 +154,20 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
         auto model = scene->GetModel();
         if (model)
         {
-
-            for (auto &node : model->Root->GetChildren())
-            {
-                m_tree.Draw(node);
-                // DrawNodeRecursive(node);
-            }
+            m_tree.Draw(model->Root);
         }
 
         ImGui::End();
+    }
+
+    for (auto kv : m_tree.m_selection)
+    {
+        ImGui::Begin("selected");
+        {
+            m_node.Draw(kv.second);
+            ImGui::End();
+        }
+        break;
     }
 
     ImGui::Begin("assets");

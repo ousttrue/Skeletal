@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <glm/glm.hpp>
+#include <DirectXMath.h>
 
 namespace agv
 {
@@ -21,8 +21,8 @@ public:
     static std::shared_ptr<GLES3Shader> Create(int shaderType);
 
     uint32_t GetUniformLocation(const std::string &name);
-    void SetUniformValue(uint32_t location, const glm::mat4 &m);
-    void SetUniformValue(const std::string &name, const glm::mat4 &m);
+    void SetUniformValue(uint32_t location, const DirectX::XMFLOAT4X4 &m);
+    void SetUniformValue(const std::string &name, const DirectX::XMFLOAT4X4 &m);
     void SetUniformValue(const std::string &name, int value);
 
     void Use();
