@@ -1,3 +1,6 @@
 [submodule "dependencies/simplegltf"]
 	path = dependencies/simplegltf
 	url = git@github.com:ousttrue/simplegltf.git
+[submodule "dependencies/imgui"]
+	path = dependencies/imgui
+	url = https://github.com/ocornut/imgui.git
