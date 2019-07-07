@@ -289,6 +289,14 @@ struct Node
             _DrawBlueprint(newLinkPin, hasOutputDelegates);
             break;
 
+        case NodeType::Tree:
+            _DrawTree(newLinkPin);
+            break;
+
+        case NodeType::Comment:
+            _DrawComment();
+            break;
+
         default:
             throw std::exception("not implemented");
         }
@@ -338,6 +346,200 @@ struct Node
         }
 
         builder.End();
+    }
+
+    void _DrawTree(Pin *newLinkPin)
+    {
+        const float rounding = 5.0f;
+        const float padding = 12.0f;
+
+        const auto pinBackground = ed::GetStyle().Colors[ed::StyleColor_NodeBg];
+
+        ed::PushStyleColor(ed::StyleColor_NodeBg, ImColor(128, 128, 128, 200));
+        ed::PushStyleColor(ed::StyleColor_NodeBorder, ImColor(32, 32, 32, 200));
+        ed::PushStyleColor(ed::StyleColor_PinRect, ImColor(60, 180, 255, 150));
+        ed::PushStyleColor(ed::StyleColor_PinRectBorder, ImColor(60, 180, 255, 150));
+
+        ed::PushStyleVar(ed::StyleVar_NodePadding, ImVec4(0, 0, 0, 0));
+        ed::PushStyleVar(ed::StyleVar_NodeRounding, rounding);
+        ed::PushStyleVar(ed::StyleVar_SourceDirection, ImVec2(0.0f, 1.0f));
+        ed::PushStyleVar(ed::StyleVar_TargetDirection, ImVec2(0.0f, -1.0f));
+        ed::PushStyleVar(ed::StyleVar_LinkStrength, 0.0f);
+        ed::PushStyleVar(ed::StyleVar_PinBorderWidth, 1.0f);
+        ed::PushStyleVar(ed::StyleVar_PinRadius, 5.0f);
+        ed::BeginNode(ID);
+
+        ImGui::BeginVertical(ID.AsPointer());
+        ImGui::BeginHorizontal("inputs");
+        ImGui::Spring(0, padding * 2);
+
+        ImRect inputsRect;
+        int inputAlpha = 200;
+
+        if (!Inputs.empty())
+        {
+            auto &pin = Inputs[0];
+            ImGui::Dummy(ImVec2(padding, padding));
+            ImGui::Spring(1, 0);
+            inputsRect = ImGui_GetItemRect();
+
+            ed::PushStyleVar(ed::StyleVar_PinArrowSize, 10.0f);
+            ed::PushStyleVar(ed::StyleVar_PinArrowWidth, 10.0f);
+            ed::PushStyleVar(ed::StyleVar_PinCorners, 12);
+            ed::BeginPin(pin.ID, ed::PinKind::Input);
+            ed::PinPivotRect(inputsRect.GetTL(), inputsRect.GetBR());
+            ed::PinRect(inputsRect.GetTL(), inputsRect.GetBR());
+            ed::EndPin();
+            ed::PopStyleVar(3);
+
+            if (newLinkPin && !CanCreateLink(newLinkPin, &pin) && &pin != newLinkPin)
+                inputAlpha = (int)(255 * ImGui::GetStyle().Alpha * (48.0f / 255.0f));
+        }
+        else
+            ImGui::Dummy(ImVec2(padding, padding));
+
+        ImGui::Spring(0, padding * 2);
+        ImGui::EndHorizontal();
+
+        ImGui::BeginHorizontal("content_frame");
+        ImGui::Spring(1, padding);
+
+        ImGui::BeginVertical("content", ImVec2(0.0f, 0.0f));
+        ImGui::Dummy(ImVec2(160, 160));
+        ImGui::Spring(1);
+        ImGui::TextUnformatted(Name.c_str());
+        ImGui::Spring(1);
+        ImGui::EndVertical();
+        auto contentRect = ImGui_GetItemRect();
+
+        ImGui::Spring(1, padding);
+        ImGui::EndHorizontal();
+
+        ImGui::BeginHorizontal("outputs");
+        ImGui::Spring(0, padding * 2);
+
+        ImRect outputsRect;
+        int outputAlpha = 200;
+        if (!Outputs.empty())
+        {
+            auto &pin = Outputs[0];
+            ImGui::Dummy(ImVec2(padding, padding));
+            ImGui::Spring(1, 0);
+            outputsRect = ImGui_GetItemRect();
+
+            ed::PushStyleVar(ed::StyleVar_PinCorners, 3);
+            ed::BeginPin(pin.ID, ed::PinKind::Output);
+            ed::PinPivotRect(outputsRect.GetTL(), outputsRect.GetBR());
+            ed::PinRect(outputsRect.GetTL(), outputsRect.GetBR());
+            ed::EndPin();
+            ed::PopStyleVar();
+
+            if (newLinkPin && !CanCreateLink(newLinkPin, &pin) && &pin != newLinkPin)
+                outputAlpha = (int)(255 * ImGui::GetStyle().Alpha * (48.0f / 255.0f));
+        }
+        else
+            ImGui::Dummy(ImVec2(padding, padding));
+
+        ImGui::Spring(0, padding * 2);
+        ImGui::EndHorizontal();
+
+        ImGui::EndVertical();
+
+        ed::EndNode();
+        ed::PopStyleVar(7);
+        ed::PopStyleColor(4);
+
+        auto drawList = ed::GetNodeBackgroundDrawList(ID);
+
+        //const auto fringeScale = ImGui::GetStyle().AntiAliasFringeScale;
+        //const auto unitSize    = 1.0f / fringeScale;
+
+        //const auto ImDrawList_AddRect = [](ImDrawList* drawList, const ImVec2& a, const ImVec2& b, ImU32 col, float rounding, int rounding_corners, float thickness)
+        //{
+        //    if ((col >> 24) == 0)
+        //        return;
+        //    drawList->PathRect(a, b, rounding, rounding_corners);
+        //    drawList->PathStroke(col, true, thickness);
+        //};
+
+#if 0
+        drawList->AddRectFilled(inputsRect.GetTL() + ImVec2(0, 1), inputsRect.GetBR(),
+                                IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, 12);
+        //ImGui::PushStyleVar(ImGuiStyleVar_AntiAliasFringeScale, 1.0f);
+        drawList->AddRect(inputsRect.GetTL() + ImVec2(0, 1), inputsRect.GetBR(),
+                          IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, 12);
+        //ImGui::PopStyleVar();
+        drawList->AddRectFilled(outputsRect.GetTL(), outputsRect.GetBR() - ImVec2(0, 1),
+                                IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, 3);
+        //ImGui::PushStyleVar(ImGuiStyleVar_AntiAliasFringeScale, 1.0f);
+        drawList->AddRect(outputsRect.GetTL(), outputsRect.GetBR() - ImVec2(0, 1),
+                          IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, 3);
+        //ImGui::PopStyleVar();
+        drawList->AddRectFilled(contentRect.GetTL(), contentRect.GetBR(), IM_COL32(24, 64, 128, 200), 0.0f);
+        //ImGui::PushStyleVar(ImGuiStyleVar_AntiAliasFringeScale, 1.0f);
+        drawList->AddRect(
+            contentRect.GetTL(),
+            contentRect.GetBR(),
+            IM_COL32(48, 128, 255, 100), 0.0f);
+        //ImGui::PopStyleVar();
+#endif
+    }
+
+    void _DrawComment()
+    {
+        const float commentAlpha = 0.75f;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, commentAlpha);
+        ed::PushStyleColor(ed::StyleColor_NodeBg, ImColor(255, 255, 255, 64));
+        ed::PushStyleColor(ed::StyleColor_NodeBorder, ImColor(255, 255, 255, 64));
+        ed::BeginNode(ID);
+        ImGui::PushID(ID.AsPointer());
+        ImGui::BeginVertical("content");
+        ImGui::BeginHorizontal("horizontal");
+        ImGui::Spring(1);
+        ImGui::TextUnformatted(Name.c_str());
+        ImGui::Spring(1);
+        ImGui::EndHorizontal();
+        ed::Group(Size);
+        ImGui::EndVertical();
+        ImGui::PopID();
+        ed::EndNode();
+        ed::PopStyleColor(2);
+        ImGui::PopStyleVar();
+
+        if (ed::BeginGroupHint(ID))
+        {
+            //auto alpha   = static_cast<int>(commentAlpha * ImGui::GetStyle().Alpha * 255);
+            auto bgAlpha = static_cast<int>(ImGui::GetStyle().Alpha * 255);
+
+            //ImGui::PushStyleVar(ImGuiStyleVar_Alpha, commentAlpha * ImGui::GetStyle().Alpha);
+
+            auto min = ed::GetGroupMin();
+            //auto max = ed::GetGroupMax();
+
+            ImGui::SetCursorScreenPos(min - ImVec2(-8, ImGui::GetTextLineHeightWithSpacing() + 4));
+            ImGui::BeginGroup();
+            ImGui::TextUnformatted(Name.c_str());
+            ImGui::EndGroup();
+
+            auto drawList = ed::GetHintBackgroundDrawList();
+
+            auto hintBounds = ImGui_GetItemRect();
+            auto hintFrameBounds = ImRect_Expanded(hintBounds, 8, 4);
+
+            drawList->AddRectFilled(
+                hintFrameBounds.GetTL(),
+                hintFrameBounds.GetBR(),
+                IM_COL32(255, 255, 255, 64 * bgAlpha / 255), 4.0f);
+
+            drawList->AddRect(
+                hintFrameBounds.GetTL(),
+                hintFrameBounds.GetBR(),
+                IM_COL32(255, 255, 255, 128 * bgAlpha / 255), 4.0f);
+
+            //ImGui::PopStyleVar();
+        }
+        ed::EndGroupHint();
     }
 };
 
@@ -929,215 +1131,13 @@ void AddOnDraw(agv::renderer::GLES3Renderer *renderer)
 
         for (auto &node : s_Nodes)
         {
-            if (node.Type != NodeType::Blueprint && node.Type != NodeType::Simple)
-            {
-                continue;
-            }
-
             node.Draw(newLinkPin);
-        }
-#if 0
-
-        for (auto &node : s_Nodes)
-        {
-            if (node.Type != NodeType::Tree)
-                continue;
-
-            const float rounding = 5.0f;
-            const float padding = 12.0f;
-
-            const auto pinBackground = ed::GetStyle().Colors[ed::StyleColor_NodeBg];
-
-            ed::PushStyleColor(ed::StyleColor_NodeBg, ImColor(128, 128, 128, 200));
-            ed::PushStyleColor(ed::StyleColor_NodeBorder, ImColor(32, 32, 32, 200));
-            ed::PushStyleColor(ed::StyleColor_PinRect, ImColor(60, 180, 255, 150));
-            ed::PushStyleColor(ed::StyleColor_PinRectBorder, ImColor(60, 180, 255, 150));
-
-            ed::PushStyleVar(ed::StyleVar_NodePadding, ImVec4(0, 0, 0, 0));
-            ed::PushStyleVar(ed::StyleVar_NodeRounding, rounding);
-            ed::PushStyleVar(ed::StyleVar_SourceDirection, ImVec2(0.0f, 1.0f));
-            ed::PushStyleVar(ed::StyleVar_TargetDirection, ImVec2(0.0f, -1.0f));
-            ed::PushStyleVar(ed::StyleVar_LinkStrength, 0.0f);
-            ed::PushStyleVar(ed::StyleVar_PinBorderWidth, 1.0f);
-            ed::PushStyleVar(ed::StyleVar_PinRadius, 5.0f);
-            ed::BeginNode(node.ID);
-
-            ImGui::BeginVertical(node.ID.AsPointer());
-            ImGui::BeginHorizontal("inputs");
-            ImGui::Spring(0, padding * 2);
-
-            ImRect inputsRect;
-            int inputAlpha = 200;
-            if (!node.Inputs.empty())
-            {
-                auto &pin = node.Inputs[0];
-                ImGui::Dummy(ImVec2(0, padding));
-                ImGui::Spring(1, 0);
-                inputsRect = ImGui_GetItemRect();
-
-                ed::PushStyleVar(ed::StyleVar_PinArrowSize, 10.0f);
-                ed::PushStyleVar(ed::StyleVar_PinArrowWidth, 10.0f);
-                ed::PushStyleVar(ed::StyleVar_PinCorners, 12);
-                ed::BeginPin(pin.ID, ed::PinKind::Input);
-                ed::PinPivotRect(inputsRect.GetTL(), inputsRect.GetBR());
-                ed::PinRect(inputsRect.GetTL(), inputsRect.GetBR());
-                ed::EndPin();
-                ed::PopStyleVar(3);
-
-                if (newLinkPin && !CanCreateLink(newLinkPin, &pin) && &pin != newLinkPin)
-                    inputAlpha = (int)(255 * ImGui::GetStyle().Alpha * (48.0f / 255.0f));
-            }
-            else
-                ImGui::Dummy(ImVec2(0, padding));
-
-            ImGui::Spring(0, padding * 2);
-            ImGui::EndHorizontal();
-
-            ImGui::BeginHorizontal("content_frame");
-            ImGui::Spring(1, padding);
-
-            ImGui::BeginVertical("content", ImVec2(0.0f, 0.0f));
-            ImGui::Dummy(ImVec2(160, 0));
-            ImGui::Spring(1);
-            ImGui::TextUnformatted(node.Name.c_str());
-            ImGui::Spring(1);
-            ImGui::EndVertical();
-            auto contentRect = ImGui_GetItemRect();
-
-            ImGui::Spring(1, padding);
-            ImGui::EndHorizontal();
-
-            ImGui::BeginHorizontal("outputs");
-            ImGui::Spring(0, padding * 2);
-
-            ImRect outputsRect;
-            int outputAlpha = 200;
-            if (!node.Outputs.empty())
-            {
-                auto &pin = node.Outputs[0];
-                ImGui::Dummy(ImVec2(0, padding));
-                ImGui::Spring(1, 0);
-                outputsRect = ImGui_GetItemRect();
-
-                ed::PushStyleVar(ed::StyleVar_PinCorners, 3);
-                ed::BeginPin(pin.ID, ed::PinKind::Output);
-                ed::PinPivotRect(outputsRect.GetTL(), outputsRect.GetBR());
-                ed::PinRect(outputsRect.GetTL(), outputsRect.GetBR());
-                ed::EndPin();
-                ed::PopStyleVar();
-
-                if (newLinkPin && !CanCreateLink(newLinkPin, &pin) && &pin != newLinkPin)
-                    outputAlpha = (int)(255 * ImGui::GetStyle().Alpha * (48.0f / 255.0f));
-            }
-            else
-                ImGui::Dummy(ImVec2(0, padding));
-
-            ImGui::Spring(0, padding * 2);
-            ImGui::EndHorizontal();
-
-            ImGui::EndVertical();
-
-            ed::EndNode();
-            ed::PopStyleVar(7);
-            ed::PopStyleColor(4);
-
-            auto drawList = ed::GetNodeBackgroundDrawList(node.ID);
-
-            //const auto fringeScale = ImGui::GetStyle().AntiAliasFringeScale;
-            //const auto unitSize    = 1.0f / fringeScale;
-
-            //const auto ImDrawList_AddRect = [](ImDrawList* drawList, const ImVec2& a, const ImVec2& b, ImU32 col, float rounding, int rounding_corners, float thickness)
-            //{
-            //    if ((col >> 24) == 0)
-            //        return;
-            //    drawList->PathRect(a, b, rounding, rounding_corners);
-            //    drawList->PathStroke(col, true, thickness);
-            //};
-
-            drawList->AddRectFilled(inputsRect.GetTL() + ImVec2(0, 1), inputsRect.GetBR(),
-                                    IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, 12);
-            //ImGui::PushStyleVar(ImGuiStyleVar_AntiAliasFringeScale, 1.0f);
-            drawList->AddRect(inputsRect.GetTL() + ImVec2(0, 1), inputsRect.GetBR(),
-                              IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, 12);
-            //ImGui::PopStyleVar();
-            drawList->AddRectFilled(outputsRect.GetTL(), outputsRect.GetBR() - ImVec2(0, 1),
-                                    IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, 3);
-            //ImGui::PushStyleVar(ImGuiStyleVar_AntiAliasFringeScale, 1.0f);
-            drawList->AddRect(outputsRect.GetTL(), outputsRect.GetBR() - ImVec2(0, 1),
-                              IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, 3);
-            //ImGui::PopStyleVar();
-            drawList->AddRectFilled(contentRect.GetTL(), contentRect.GetBR(), IM_COL32(24, 64, 128, 200), 0.0f);
-            //ImGui::PushStyleVar(ImGuiStyleVar_AntiAliasFringeScale, 1.0f);
-            drawList->AddRect(
-                contentRect.GetTL(),
-                contentRect.GetBR(),
-                IM_COL32(48, 128, 255, 100), 0.0f);
-            //ImGui::PopStyleVar();
-        }
-
-        for (auto &node : s_Nodes)
-        {
-            if (node.Type != NodeType::Comment)
-                continue;
-
-            const float commentAlpha = 0.75f;
-
-            ImGui::PushStyleVar(ImGuiStyleVar_Alpha, commentAlpha);
-            ed::PushStyleColor(ed::StyleColor_NodeBg, ImColor(255, 255, 255, 64));
-            ed::PushStyleColor(ed::StyleColor_NodeBorder, ImColor(255, 255, 255, 64));
-            ed::BeginNode(node.ID);
-            ImGui::PushID(node.ID.AsPointer());
-            ImGui::BeginVertical("content");
-            ImGui::BeginHorizontal("horizontal");
-            ImGui::Spring(1);
-            ImGui::TextUnformatted(node.Name.c_str());
-            ImGui::Spring(1);
-            ImGui::EndHorizontal();
-            ed::Group(node.Size);
-            ImGui::EndVertical();
-            ImGui::PopID();
-            ed::EndNode();
-            ed::PopStyleColor(2);
-            ImGui::PopStyleVar();
-
-            if (ed::BeginGroupHint(node.ID))
-            {
-                //auto alpha   = static_cast<int>(commentAlpha * ImGui::GetStyle().Alpha * 255);
-                auto bgAlpha = static_cast<int>(ImGui::GetStyle().Alpha * 255);
-
-                //ImGui::PushStyleVar(ImGuiStyleVar_Alpha, commentAlpha * ImGui::GetStyle().Alpha);
-
-                auto min = ed::GetGroupMin();
-                //auto max = ed::GetGroupMax();
-
-                ImGui::SetCursorScreenPos(min - ImVec2(-8, ImGui::GetTextLineHeightWithSpacing() + 4));
-                ImGui::BeginGroup();
-                ImGui::TextUnformatted(node.Name.c_str());
-                ImGui::EndGroup();
-
-                auto drawList = ed::GetHintBackgroundDrawList();
-
-                auto hintBounds = ImGui_GetItemRect();
-                auto hintFrameBounds = ImRect_Expanded(hintBounds, 8, 4);
-
-                drawList->AddRectFilled(
-                    hintFrameBounds.GetTL(),
-                    hintFrameBounds.GetBR(),
-                    IM_COL32(255, 255, 255, 64 * bgAlpha / 255), 4.0f);
-
-                drawList->AddRect(
-                    hintFrameBounds.GetTL(),
-                    hintFrameBounds.GetBR(),
-                    IM_COL32(255, 255, 255, 128 * bgAlpha / 255), 4.0f);
-
-                //ImGui::PopStyleVar();
-            }
-            ed::EndGroupHint();
         }
 
         for (auto &link : s_Links)
             ed::Link(link.ID, link.StartPinID, link.EndPinID, link.Color, 2.0f);
 
+#if 0
         if (!createNewNode)
         {
             if (ed::BeginCreate(ImColor(255, 255, 255), 2.0f))
