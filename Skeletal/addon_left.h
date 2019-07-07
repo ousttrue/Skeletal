@@ -1,13 +1,13 @@
 void ShowLeftPane(float paneWidth, agv::renderer::GLES3Renderer *renderer)
 {
-    #if 0
     auto &io = ImGui::GetIO();
 
     ImGui::BeginChild("Selection", ImVec2(paneWidth, 0));
+    #if 0
 
     paneWidth = ImGui::GetContentRegionAvailWidth();
 
-    static bool showStyleEditor = false;
+    static bool showStyleEditor = fGalse;
     ImGui::BeginHorizontal("Style Editor", ImVec2(paneWidth, 0));
     ImGui::Spring(0.0f, 0.0f);
     if (ImGui::Button("Zoom to Content"))
@@ -172,7 +172,7 @@ void ShowLeftPane(float paneWidth, agv::renderer::GLES3Renderer *renderer)
 
     if (ed::HasSelectionChanged())
         ++changeCount;
+    #endif
 
     ImGui::EndChild();
-    #endif
 }

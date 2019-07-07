@@ -12,6 +12,7 @@
 #include <scene.h>
 #include <gles3renderer.h>
 #include "addon_helper.h"
+#include "addon_left.h"
 
 static inline ImRect ImGui_GetItemRect()
 {
@@ -731,7 +732,7 @@ void AddOnDraw(agv::renderer::GLES3Renderer *renderer)
     static float rightPaneWidth = 800.0f;
     Splitter(true, 4.0f, &leftPaneWidth, &rightPaneWidth, 50.0f, 50.0f);
 
-    // ShowLeftPane(leftPaneWidth - 4.0f, renderer);
+    ShowLeftPane(leftPaneWidth - 4.0f, renderer);
 
     ImGui::SameLine(0.0f, 12.0f);
 
@@ -745,6 +746,7 @@ void AddOnDraw(agv::renderer::GLES3Renderer *renderer)
         // util::BlueprintNodeBuilder builder(headerBackground, headerBackgroundSize.x, headerBackgroundSize.y);
         Builder builder(headerBackground, headerBackgroundSize.x, headerBackgroundSize.y);
 
+        #if 0
         for (auto &node : s_Nodes)
         {
             if (node.Type != NodeType::Blueprint && node.Type != NodeType::Simple)
@@ -1200,6 +1202,7 @@ void AddOnDraw(agv::renderer::GLES3Renderer *renderer)
             }
             ed::EndDelete();
         }
+        #endif
 
         ImGui::SetCursorScreenPos(cursorTopLeft);
     }
