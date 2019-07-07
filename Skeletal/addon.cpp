@@ -4,13 +4,14 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 #include <ax/Math2D.h>
-#include <ax/Builders.h>
-#include <ax/Widgets.h>
+// #include <ax/Builders.h>
+// #include <ax/Widgets.h>
 #include <string>
 #include <memory>
 #include <tuple>
 #include <scene.h>
 #include <gles3renderer.h>
+#include "addon_helper.h"
 
 static inline ImRect ImGui_GetItemRect()
 {
@@ -28,11 +29,11 @@ static inline ImRect ImRect_Expanded(const ImRect &rect, float x, float y)
 }
 
 namespace ed = ax::NodeEditor;
-namespace util = ax::NodeEditor::Utilities;
+// namespace util = ax::NodeEditor::Utilities;
 
 using namespace ax;
 
-using ax::Widgets::IconType;
+// using ax::Widgets::IconType;
 
 static ed::EditorContext *m_Editor = nullptr;
 
@@ -583,6 +584,7 @@ ImColor GetIconColor(PinType type)
 
 void DrawPinIcon(const Pin &pin, bool connected, int alpha)
 {
+#if 0
     IconType iconType;
     ImColor color = GetIconColor(pin.Type);
     color.Value.w = alpha / 255.0f;
@@ -617,6 +619,7 @@ void DrawPinIcon(const Pin &pin, bool connected, int alpha)
     }
 
     ax::Widgets::Icon(ImVec2(s_PinIconSize, s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));
+#endif
 };
 
 void ShowStyleEditor(bool *show = nullptr)
@@ -914,7 +917,8 @@ void AddOnDraw(agv::renderer::GLES3Renderer *renderer)
         void *headerBackground = renderer->GetOrCreateTexture(s_HeaderBackground.get());
         auto headerBackgroundSize = renderer->GetTextureSize(s_HeaderBackground->GetID());
 
-        util::BlueprintNodeBuilder builder(headerBackground, headerBackgroundSize.x, headerBackgroundSize.y);
+        // util::BlueprintNodeBuilder builder(headerBackground, headerBackgroundSize.x, headerBackgroundSize.y);
+        Builder builder(headerBackground, headerBackgroundSize.x, headerBackgroundSize.y);
 
         for (auto &node : s_Nodes)
         {
