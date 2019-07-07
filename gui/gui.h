@@ -1,11 +1,24 @@
 #include <Windows.h>
 
-namespace agv::gui
+namespace agv
 {
 
+namespace renderer
+{
+class GLES3Renderer;
+}
+
+namespace scene
+{
+class Scene;
+}
+
+namespace gui
+{
 class GUI
 {
     bool m_initialized = false;
+    bool m_openView = true;
 
 public:
     GUI();
@@ -26,8 +39,11 @@ public:
 
     void SetScreenSize(int w, int h);
 
-    void Begin(HWND hWnd, float deltaSeconds);
+    void Begin(HWND hWnd, float deltaSeconds,
+               agv::renderer::GLES3Renderer *renderer,
+               agv::scene::Scene *scene);
     void End();
 };
 
-} // namespace agv::gui
+} // namespace gui
+} // namespace agv

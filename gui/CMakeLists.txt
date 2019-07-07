@@ -37,4 +37,5 @@ TARGET_COMPILE_DEFINITIONS(${SUB_NAME} PUBLIC
 TARGET_INCLUDE_DIRECTORIES(${SUB_NAME} PUBLIC
     ../imgui
     ../scene
+    ../gles3renderer
 	)

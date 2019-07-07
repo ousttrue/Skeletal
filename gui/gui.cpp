@@ -3,6 +3,8 @@
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_win32.h>
 #include <exception>
+#include <gles3renderer.h>
+#include <scene.h>
 const char *glsl_version = "#version 300 es";
 
 namespace agv
@@ -211,7 +213,7 @@ static void Dockspace()
     ImGui::End();
 }
 
-void GUI::Begin(HWND hWnd, float deltaSeconds)
+void GUI::Begin(HWND hWnd, float deltaSeconds, agv::renderer::GLES3Renderer *renderer, agv::scene::Scene *scene)
 {
     if (!m_initialized)
     {
@@ -234,6 +236,22 @@ void GUI::Begin(HWND hWnd, float deltaSeconds)
 
     // widgets...
     Dockspace();
+
+    // render centrarl wigets
+    if(ImGui::Begin("3DView", &m_openView))
+    {
+        // transfer MouseEvents
+
+        // resize rendertarget
+        auto size = ImGui::GetWindowSize();
+
+        // render and get rendertarget
+        renderer->Draw(scene);
+
+        // ToDo
+        // ImGui::Image();
+    }
+    ImGui::End();
 }
 
 void GUI::End()
