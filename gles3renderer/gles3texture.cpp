@@ -54,6 +54,8 @@ void GLES3Texture::SetImage(int width, int height, int channels, const std::byte
         throw std::exception("invalid channels");
     }
 
+    m_size.x = width;
+    m_size.y = height;
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0,
                  format, GL_UNSIGNED_BYTE, static_cast<const void *>(data));
 

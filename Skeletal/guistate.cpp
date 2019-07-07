@@ -2,30 +2,18 @@
 #include <scene.h>
 #include <gles3renderer.h>
 #include <imgui.h>
-#include <imgui_widgets.cpp>
 #include <ImGuizmo.h>
 #include <memory>
 #include <Windows.h>
 #include "addon.h"
 
-# include <imgui_node_editor.h>
-// # define IMGUI_DEFINE_MATH_OPERATORS
-// # include <imgui_internal.h>
-
-namespace ed = ax::NodeEditor;
-
-static ed::EditorContext* g_Context = nullptr;
-
 void GuiState::Initialize()
 {
-    ed::Config config;
-    config.SettingsFile = "Simple.json";
-    g_Context = ed::CreateEditor(&config);
+    AddOnInit();
 }
 
 GuiState::~GuiState()
 {
-    ed::DestroyEditor(g_Context);
 }
 
 static std::wstring OpenDialog()
@@ -190,7 +178,15 @@ static void EditTransform(
 
 void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *renderer)
 {
-    ImGuizmo::BeginFrame();
+    ImGuizmo::BeginFrame(); // gizmo
+
+    ImGui::Begin("NodeEditor");
+    {
+        AddOnDraw(renderer);
+        ImGui::End();
+    }
+    // return;
+
     ImGui::Begin("scene", nullptr, ImGuiWindowFlags_MenuBar);
     {
         if (ImGui::BeginMenuBar())
@@ -362,42 +358,5 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
         ImGui::End();
     }
 
-    AddOn();
 
-    ImGui::Begin("NodeEditor");
-    {
-        ed::SetCurrentEditor(g_Context);
-        ed::Begin("My Editor", ImVec2(0.0, 0.0f));
-
-        int uniqueId = 1;
-
-        // Start drawing nodes.
-        ed::BeginNode(uniqueId++);
-        ImGui::Text("Node A");
-        ed::BeginPin(uniqueId++, ed::PinKind::Input);
-        ImGui::Text("-> In");
-        ed::EndPin();
-        ImGui::SameLine();
-        ed::BeginPin(uniqueId++, ed::PinKind::Output);
-        ImGui::Text("Out ->");
-        ed::EndPin();
-        ed::EndNode();
-
-        // Start drawing nodes.
-        ed::BeginNode(uniqueId++);
-        ImGui::Text("Node B");
-        ed::BeginPin(uniqueId++, ed::PinKind::Input);
-        ImGui::Text("-> In");
-        ed::EndPin();
-        ImGui::SameLine();
-        ed::BeginPin(uniqueId++, ed::PinKind::Output);
-        ImGui::Text("Out ->");
-        ed::EndPin();
-        ed::EndNode();
-
-        ed::End();
-        ed::SetCurrentEditor(nullptr);
-
-        ImGui::End();
-    }
 }

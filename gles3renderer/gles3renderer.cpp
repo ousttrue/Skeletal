@@ -15,6 +15,15 @@
 
 struct StbImage
 {
+private:
+    StbImage(const StbImage &);            // non construction-copyable
+    StbImage &operator=(const StbImage &); // non copyable
+
+public:
+    StbImage()
+    {
+    }
+
     unsigned char *data = nullptr;
     int width = 0;
     int height = 0;
@@ -29,6 +38,10 @@ struct StbImage
     {
         data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(src), static_cast<int>(size),
                                      &width, &height, &channels, 4);
+        if (channels != 4)
+        {
+            channels = 4;
+        }
         return data != 0;
     }
 
@@ -75,12 +88,12 @@ struct GLES3RendererImpl
 
     /// texture
     std::unordered_map<uint32_t, std::shared_ptr<GLES3Texture>> m_texture_map;
-    void *GetTexture(uint32_t id) const
+    std::shared_ptr<GLES3Texture> GetTexture(uint32_t id) const
     {
         auto found = m_texture_map.find(id);
         if (found != m_texture_map.end())
         {
-            return (void *)(int64_t)found->second->GetGLValue();
+            return found->second;
         }
         return nullptr;
     }
@@ -92,15 +105,15 @@ struct GLES3RendererImpl
             return found->second;
         }
 
-        auto texture = std::make_shared<GLES3Texture>();
-        m_texture_map.insert(std::make_pair(pTexture->GetID(), texture));
-
         StbImage image;
         if (!image.Load(pTexture->Bytes.data, pTexture->Bytes.size))
         {
             LOGE << "fail to load image: " << pTexture->GetName();
             return nullptr;
         }
+
+        auto texture = std::make_shared<GLES3Texture>();
+        m_texture_map.insert(std::make_pair(pTexture->GetID(), texture));
 
         texture->SetImage(image.width, image.height, image.channels, (const std::byte *)image.data);
 
@@ -311,9 +324,30 @@ void GLES3Renderer::DrawModel(const agv::scene::ICamera *camera, const agv::scen
     }
 }
 
+void *GLES3Renderer::GetOrCreateTexture(const agv::scene::Texture *pTexture)
+{
+    auto texture = m_impl->GetOrCreateTexture(pTexture);
+    return (void *)(int64_t)texture->GetGLValue();
+}
+
 void *GLES3Renderer::GetTexture(uint32_t id) const
 {
-    return m_impl->GetTexture(id);
+    auto texture = m_impl->GetTexture(id);
+    if (!texture)
+    {
+        return nullptr;
+    }
+    return (void *)(int64_t)texture->GetGLValue();
+}
+
+DirectX::XMINT2 GLES3Renderer::GetTextureSize(uint32_t id) const
+{
+    auto texture = m_impl->GetTexture(id);
+    if (!texture)
+    {
+        return DirectX::XMINT2(0, 0);
+    }
+    return texture->GetSize();
 }
 
 } // namespace renderer

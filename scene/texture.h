@@ -24,6 +24,7 @@ public:
     }
 
     static std::shared_ptr<Texture> Load(const simplegltf::Storage &storage, const simplegltf::GltfTexture &gltfTexture);
+    static std::shared_ptr<Texture> Create(const std::filesystem::path &path);
 };
 
 } // namespace scene

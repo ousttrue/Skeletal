@@ -4,17 +4,18 @@ SET(DEPENDENCIES ../dependencies)
 FILE(GLOB SRC
 	*.cpp
 	*.h
-    ${DEPENDENCIES}/imgui/imgui.cpp
-    ${DEPENDENCIES}/imgui/imgui.h
-    ${DEPENDENCIES}/imgui/imgui_widgets.cpp
-    ${DEPENDENCIES}/imgui/imgui_widgets.h
-    ${DEPENDENCIES}/imgui/imgui_demo.cpp
-    ${DEPENDENCIES}/imgui/imgui_draw.cpp
-    ${DEPENDENCIES}/imgui/imgui_internal.h
-    ${DEPENDENCIES}/imgui/imconfig.h
+    ${DEPENDENCIES}/imgui-node-editor/ThirdParty/imgui/imgui.cpp
+    ${DEPENDENCIES}/imgui-node-editor/ThirdParty/imgui/imgui.h
+    ${DEPENDENCIES}/imgui-node-editor/ThirdParty/imgui/imgui_widgets.cpp
+    ${DEPENDENCIES}/imgui-node-editor/ThirdParty/imgui/imgui_demo.cpp
+    ${DEPENDENCIES}/imgui-node-editor/ThirdParty/imgui/imgui_draw.cpp
+    ${DEPENDENCIES}/imgui-node-editor/ThirdParty/imgui/imgui_internal.h
+    ${DEPENDENCIES}/imgui-node-editor/ThirdParty/imgui/imconfig.h
+    ${DEPENDENCIES}/imgui-node-editor/Examples/Common/BlueprintUtilities/Source/ax/*
     ${DEPENDENCIES}/imgui/stb_rect_pack.h
     ${DEPENDENCIES}/imgui/stb_textedit.h
     ${DEPENDENCIES}/imgui/stb_truetype.h
+
     ${DEPENDENCIES}/imgui/examples/imgui_impl_opengl3.h
     ${DEPENDENCIES}/imgui/examples/imgui_impl_opengl3.cpp
     ${DEPENDENCIES}/imgui/examples/imgui_impl_win32.h
@@ -36,9 +37,7 @@ TARGET_COMPILE_DEFINITIONS(${SUB_NAME} PUBLIC
 	)
 
 TARGET_INCLUDE_DIRECTORIES(${SUB_NAME} PUBLIC
-    ../glm
-    ../imgui
     ../scene
-	${CMAKE_INSTALL_PREFIX}/include
+    ${DEPENDENCIES}/imgui-node-editor/Examples/Common/BlueprintUtilities/Source
+    ${DEPENDENCIES}/imgui-node-editor/ThirdParty/stb_image
 	)
-

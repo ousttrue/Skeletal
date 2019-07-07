@@ -3,8 +3,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${env:CMAKE_INSTALL_PREFIX}/include"
+                "${workspaceFolder}/dependencies/imgui-node-editor/ThirdParty/imgui",
+                "${env:VCPKG_DIR}/installed/x64-windows/include"
             ],
             "defines": [
                 "_DEBUG",

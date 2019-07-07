@@ -3,6 +3,7 @@
 #include <memory>
 #include <scene.h>
 #include <unordered_map>
+#include <DirectXMath.h>
 #include "shadersourcemanager.h"
 
 namespace agv
@@ -23,7 +24,9 @@ public:
     void Resize(int w, int h);
     void Draw(agv::scene::Scene *pScene);
 
+    void *GetOrCreateTexture(const agv::scene::Texture *pTexture);
     void *GetTexture(uint32_t id) const;
+    DirectX::XMINT2 GetTextureSize(uint32_t id) const;
 
 private:
     void DrawNode(const agv::scene::ICamera *camera, const agv::scene::Node *cameraNode, const agv::scene::Node *node);

@@ -28,6 +28,7 @@
         "RBUTTONUP",
         "WNDCLASSEX",
         "XMFLOAT",
+        "XMINT",
         "XMMATRIX",
         "XMVECTOR",
         "nlohmann",
