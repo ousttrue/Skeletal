@@ -14,6 +14,8 @@
 #include "addon_helper.h"
 #include "addon_left.h"
 
+static const int s_PinIconSize = 24;
+
 static inline ImRect ImGui_GetItemRect()
 {
     return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
@@ -31,6 +33,7 @@ static inline ImRect ImRect_Expanded(const ImRect &rect, float x, float y)
 
 namespace ed = ax::NodeEditor;
 // namespace util = ax::NodeEditor::Utilities;
+static bool IsPinLinked(ed::PinId id);
 
 using namespace ax;
 
@@ -91,6 +94,14 @@ struct Pin
     }
 };
 
+static bool CanCreateLink(Pin *a, Pin *b)
+{
+    if (!a || !b || a == b || a->Kind == b->Kind || a->Type != b->Type || a->Node == b->Node)
+        return false;
+
+    return true;
+}
+
 struct Node
 {
     ed::NodeId ID;
@@ -106,6 +117,227 @@ struct Node
 
     Node(int id, const char *name, ImColor color = ImColor(255, 255, 255)) : ID(id), Name(name), Color(color), Type(NodeType::Blueprint), Size(0, 0)
     {
+    }
+
+    void DrawPinIcon(const Pin &pin, bool connected, int alpha)
+    {
+#if 0
+    IconType iconType;
+    ImColor color = GetIconColor(pin.Type);
+    color.Value.w = alpha / 255.0f;
+    switch (pin.Type)
+    {
+    case PinType::Flow:
+        iconType = IconType::Flow;
+        break;
+    case PinType::Bool:
+        iconType = IconType::Circle;
+        break;
+    case PinType::Int:
+        iconType = IconType::Circle;
+        break;
+    case PinType::Float:
+        iconType = IconType::Circle;
+        break;
+    case PinType::String:
+        iconType = IconType::Circle;
+        break;
+    case PinType::Object:
+        iconType = IconType::Circle;
+        break;
+    case PinType::Function:
+        iconType = IconType::Circle;
+        break;
+    case PinType::Delegate:
+        iconType = IconType::Square;
+        break;
+    default:
+        return;
+    }
+
+    ax::Widgets::Icon(ImVec2(s_PinIconSize, s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));
+#else
+        ImGui::Dummy(ImVec2(s_PinIconSize, s_PinIconSize));
+        // ax::Widgets::Icon(ImVec2(s_PinIconSize, s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));
+#endif
+    };
+
+    void _Draw(Builder &builder, Pin *newLinkPin, bool hasOutputDelegates)
+    {
+        builder.Header(Color);
+        ImGui::Spring(0);
+        ImGui::TextUnformatted(Name.c_str());
+        ImGui::Spring(1);
+        ImGui::Dummy(ImVec2(0, 28));
+        if (hasOutputDelegates)
+        {
+            ImGui::BeginVertical("delegates", ImVec2(0, 28));
+            ImGui::Spring(1, 0);
+            for (auto &output : Outputs)
+            {
+                if (output.Type != PinType::Delegate)
+                    continue;
+
+                auto alpha = ImGui::GetStyle().Alpha;
+                if (newLinkPin && !CanCreateLink(newLinkPin, &output) && &output != newLinkPin)
+                    alpha = alpha * (48.0f / 255.0f);
+
+                ed::BeginPin(output.ID, ed::PinKind::Output);
+                ed::PinPivotAlignment(ImVec2(1.0f, 0.5f));
+                ed::PinPivotSize(ImVec2(0, 0));
+                ImGui::BeginHorizontal(output.ID.AsPointer());
+                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+                if (!output.Name.empty())
+                {
+                    ImGui::TextUnformatted(output.Name.c_str());
+                    ImGui::Spring(0);
+                }
+                DrawPinIcon(output, IsPinLinked(output.ID), (int)(alpha * 255));
+                ImGui::Spring(0, ImGui::GetStyle().ItemSpacing.x / 2);
+                ImGui::EndHorizontal();
+                ImGui::PopStyleVar();
+                ed::EndPin();
+
+                //DrawItemRect(ImColor(255, 0, 0));
+            }
+            ImGui::Spring(1, 0);
+            ImGui::EndVertical();
+            ImGui::Spring(0, ImGui::GetStyle().ItemSpacing.x / 2);
+        }
+        else
+            ImGui::Spring(0);
+        builder.EndHeader();
+    }
+
+    void _DrawInput(Builder &builder, Pin &input, Pin *newLinkPin)
+    {
+        auto alpha = ImGui::GetStyle().Alpha;
+        if (newLinkPin && !CanCreateLink(newLinkPin, &input) && &input != newLinkPin)
+            alpha = alpha * (48.0f / 255.0f);
+
+        builder.Input(input.ID);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+        DrawPinIcon(input, IsPinLinked(input.ID), (int)(alpha * 255));
+        ImGui::Spring(0);
+        if (!input.Name.empty())
+        {
+            ImGui::TextUnformatted(input.Name.c_str());
+            ImGui::Spring(0);
+        }
+        if (input.Type == PinType::Bool)
+        {
+            ImGui::Button("Hello");
+            ImGui::Spring(0);
+        }
+        ImGui::PopStyleVar();
+        builder.EndInput();
+    }
+
+    void _DrawOutput(Builder &builder, Pin &output, Pin *newLinkPin, bool hasOutputDelegate)
+    {
+        auto alpha = ImGui::GetStyle().Alpha;
+        if (newLinkPin && !CanCreateLink(newLinkPin, &output) && &output != newLinkPin)
+            alpha = alpha * (48.0f / 255.0f);
+
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+        builder.Output(output.ID);
+        if (output.Type == PinType::String)
+        {
+            static char buffer[128] = "Edit Me\nMultiline!";
+            static bool wasActive = false;
+
+            ImGui::PushItemWidth(100.0f);
+            ImGui::InputText("##edit", buffer, 127);
+            ImGui::PopItemWidth();
+            if (ImGui::IsItemActive() && !wasActive)
+            {
+                ed::EnableShortcuts(false);
+                wasActive = true;
+            }
+            else if (!ImGui::IsItemActive() && wasActive)
+            {
+                ed::EnableShortcuts(true);
+                wasActive = false;
+            }
+            ImGui::Spring(0);
+        }
+        if (!output.Name.empty())
+        {
+            ImGui::Spring(0);
+            ImGui::TextUnformatted(output.Name.c_str());
+        }
+        ImGui::Spring(0);
+        DrawPinIcon(output, IsPinLinked(output.ID), (int)(alpha * 255));
+        ImGui::PopStyleVar();
+        builder.EndOutput();
+    }
+
+    void Draw(Pin *newLinkPin)
+    {
+        bool hasOutputDelegates = false;
+        for (auto &output : Outputs)
+            if (output.Type == PinType::Delegate)
+                hasOutputDelegates = true;
+
+        switch (Type)
+        {
+        case NodeType::Simple:
+            _DrawSimple(newLinkPin, hasOutputDelegates);
+            break;
+
+        case NodeType::Blueprint:
+            _DrawBlueprint(newLinkPin, hasOutputDelegates);
+            break;
+
+        default:
+            throw std::exception("not implemented");
+        }
+    }
+
+    void _DrawSimple(Pin *newLinkPin, bool hasOutputDelegates)
+    {
+        Builder builder;
+        builder.Begin(ID);
+
+        for (auto &input : Inputs)
+        {
+            _DrawInput(builder, input, newLinkPin);
+        }
+
+        builder.Middle();
+        ImGui::Spring(1, 0);
+        ImGui::TextUnformatted(Name.c_str());
+        ImGui::Spring(1, 0);
+
+        for (auto &output : Outputs)
+        {
+            _DrawOutput(builder, output, newLinkPin, hasOutputDelegates);
+        }
+
+        builder.End();
+    }
+
+    void _DrawBlueprint(Pin *newLinkPin, bool hasOutputDelegates)
+    {
+        Builder builder;
+        builder.Begin(ID);
+
+        _Draw(builder, newLinkPin, hasOutputDelegates);
+
+        for (auto &input : Inputs)
+        {
+            _DrawInput(builder, input, newLinkPin);
+        }
+
+        for (auto &output : Outputs)
+        {
+            if (output.Type == PinType::Delegate)
+                continue;
+
+            _DrawOutput(builder, output, newLinkPin, hasOutputDelegates);
+        }
+
+        builder.End();
     }
 };
 
@@ -123,9 +355,21 @@ struct Link
     }
 };
 
-static const int s_PinIconSize = 24;
 static std::vector<Node> s_Nodes;
+
 static std::vector<Link> s_Links;
+static bool IsPinLinked(ed::PinId id)
+{
+    if (!id)
+        return false;
+
+    for (auto &link : s_Links)
+        if (link.StartPinID == id || link.EndPinID == id)
+            return true;
+
+    return false;
+}
+
 static std::shared_ptr<agv::scene::Texture> s_HeaderBackground;
 //static ImTextureID          s_SampleImage = nullptr;
 static std::shared_ptr<agv::scene::Texture> s_SaveIcon;
@@ -217,26 +461,6 @@ static Pin *FindPin(ed::PinId id)
     }
 
     return nullptr;
-}
-
-static bool IsPinLinked(ed::PinId id)
-{
-    if (!id)
-        return false;
-
-    for (auto &link : s_Links)
-        if (link.StartPinID == id || link.EndPinID == id)
-            return true;
-
-    return false;
-}
-
-static bool CanCreateLink(Pin *a, Pin *b)
-{
-    if (!a || !b || a == b || a->Kind == b->Kind || a->Type != b->Type || a->Node == b->Node)
-        return false;
-
-    return true;
 }
 
 //static void DrawItemRect(ImColor color, float expand = 0.0f)
@@ -583,46 +807,6 @@ ImColor GetIconColor(PinType type)
     }
 };
 
-void DrawPinIcon(const Pin &pin, bool connected, int alpha)
-{
-#if 0
-    IconType iconType;
-    ImColor color = GetIconColor(pin.Type);
-    color.Value.w = alpha / 255.0f;
-    switch (pin.Type)
-    {
-    case PinType::Flow:
-        iconType = IconType::Flow;
-        break;
-    case PinType::Bool:
-        iconType = IconType::Circle;
-        break;
-    case PinType::Int:
-        iconType = IconType::Circle;
-        break;
-    case PinType::Float:
-        iconType = IconType::Circle;
-        break;
-    case PinType::String:
-        iconType = IconType::Circle;
-        break;
-    case PinType::Object:
-        iconType = IconType::Circle;
-        break;
-    case PinType::Function:
-        iconType = IconType::Circle;
-        break;
-    case PinType::Delegate:
-        iconType = IconType::Square;
-        break;
-    default:
-        return;
-    }
-
-    ax::Widgets::Icon(ImVec2(s_PinIconSize, s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));
-#endif
-};
-
 void ShowStyleEditor(bool *show = nullptr)
 {
     if (!ImGui::Begin("Style", show))
@@ -697,8 +881,6 @@ void ShowStyleEditor(bool *show = nullptr)
     ImGui::End();
 }
 
-
-
 void AddOnDraw(agv::renderer::GLES3Renderer *renderer)
 {
     UpdateTouch();
@@ -744,146 +926,17 @@ void AddOnDraw(agv::renderer::GLES3Renderer *renderer)
         auto headerBackgroundSize = renderer->GetTextureSize(s_HeaderBackground->GetID());
 
         // util::BlueprintNodeBuilder builder(headerBackground, headerBackgroundSize.x, headerBackgroundSize.y);
-        Builder builder(headerBackground, headerBackgroundSize.x, headerBackgroundSize.y);
 
-        #if 0
         for (auto &node : s_Nodes)
         {
             if (node.Type != NodeType::Blueprint && node.Type != NodeType::Simple)
+            {
                 continue;
-
-            const auto isSimple = node.Type == NodeType::Simple;
-
-            bool hasOutputDelegates = false;
-            for (auto &output : node.Outputs)
-                if (output.Type == PinType::Delegate)
-                    hasOutputDelegates = true;
-
-            builder.Begin(node.ID);
-            if (!isSimple)
-            {
-                builder.Header(node.Color);
-                ImGui::Spring(0);
-                ImGui::TextUnformatted(node.Name.c_str());
-                ImGui::Spring(1);
-                ImGui::Dummy(ImVec2(0, 28));
-                if (hasOutputDelegates)
-                {
-                    ImGui::BeginVertical("delegates", ImVec2(0, 28));
-                    ImGui::Spring(1, 0);
-                    for (auto &output : node.Outputs)
-                    {
-                        if (output.Type != PinType::Delegate)
-                            continue;
-
-                        auto alpha = ImGui::GetStyle().Alpha;
-                        if (newLinkPin && !CanCreateLink(newLinkPin, &output) && &output != newLinkPin)
-                            alpha = alpha * (48.0f / 255.0f);
-
-                        ed::BeginPin(output.ID, ed::PinKind::Output);
-                        ed::PinPivotAlignment(ImVec2(1.0f, 0.5f));
-                        ed::PinPivotSize(ImVec2(0, 0));
-                        ImGui::BeginHorizontal(output.ID.AsPointer());
-                        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-                        if (!output.Name.empty())
-                        {
-                            ImGui::TextUnformatted(output.Name.c_str());
-                            ImGui::Spring(0);
-                        }
-                        DrawPinIcon(output, IsPinLinked(output.ID), (int)(alpha * 255));
-                        ImGui::Spring(0, ImGui::GetStyle().ItemSpacing.x / 2);
-                        ImGui::EndHorizontal();
-                        ImGui::PopStyleVar();
-                        ed::EndPin();
-
-                        //DrawItemRect(ImColor(255, 0, 0));
-                    }
-                    ImGui::Spring(1, 0);
-                    ImGui::EndVertical();
-                    ImGui::Spring(0, ImGui::GetStyle().ItemSpacing.x / 2);
-                }
-                else
-                    ImGui::Spring(0);
-                builder.EndHeader();
             }
 
-            for (auto &input : node.Inputs)
-            {
-                auto alpha = ImGui::GetStyle().Alpha;
-                if (newLinkPin && !CanCreateLink(newLinkPin, &input) && &input != newLinkPin)
-                    alpha = alpha * (48.0f / 255.0f);
-
-                builder.Input(input.ID);
-                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-                DrawPinIcon(input, IsPinLinked(input.ID), (int)(alpha * 255));
-                ImGui::Spring(0);
-                if (!input.Name.empty())
-                {
-                    ImGui::TextUnformatted(input.Name.c_str());
-                    ImGui::Spring(0);
-                }
-                if (input.Type == PinType::Bool)
-                {
-                    ImGui::Button("Hello");
-                    ImGui::Spring(0);
-                }
-                ImGui::PopStyleVar();
-                builder.EndInput();
-            }
-
-            if (isSimple)
-            {
-                builder.Middle();
-
-                ImGui::Spring(1, 0);
-                ImGui::TextUnformatted(node.Name.c_str());
-                ImGui::Spring(1, 0);
-            }
-
-            for (auto &output : node.Outputs)
-            {
-                if (!isSimple && output.Type == PinType::Delegate)
-                    continue;
-
-                auto alpha = ImGui::GetStyle().Alpha;
-                if (newLinkPin && !CanCreateLink(newLinkPin, &output) && &output != newLinkPin)
-                    alpha = alpha * (48.0f / 255.0f);
-
-                ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-                builder.Output(output.ID);
-                if (output.Type == PinType::String)
-                {
-                    static char buffer[128] = "Edit Me\nMultiline!";
-                    static bool wasActive = false;
-
-                    ImGui::PushItemWidth(100.0f);
-                    ImGui::InputText("##edit", buffer, 127);
-                    ImGui::PopItemWidth();
-                    if (ImGui::IsItemActive() && !wasActive)
-                    {
-                        ed::EnableShortcuts(false);
-                        wasActive = true;
-                    }
-                    else if (!ImGui::IsItemActive() && wasActive)
-                    {
-                        ed::EnableShortcuts(true);
-                        wasActive = false;
-                    }
-                    ImGui::Spring(0);
-                }
-                if (!output.Name.empty())
-                {
-                    ImGui::Spring(0);
-                    ImGui::TextUnformatted(output.Name.c_str());
-                }
-                ImGui::Spring(0);
-                DrawPinIcon(output, IsPinLinked(output.ID), (int)(alpha * 255));
-                ImGui::PopStyleVar();
-                builder.EndOutput();
-            }
-
-            builder.End();
+            node.Draw(newLinkPin);
         }
+#if 0
 
         for (auto &node : s_Nodes)
         {
@@ -1202,7 +1255,7 @@ void AddOnDraw(agv::renderer::GLES3Renderer *renderer)
             }
             ed::EndDelete();
         }
-        #endif
+#endif
 
         ImGui::SetCursorScreenPos(cursorTopLeft);
     }

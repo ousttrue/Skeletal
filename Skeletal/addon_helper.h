@@ -32,7 +32,7 @@ class Builder
     ax::NodeEditor::NodeId CurrentNodeId = 0;
 
 public:
-    Builder(ImTextureID texture = nullptr, int textureWidth = 0, int textureHeight = 0)
+    Builder()
     // : m_w(w), m_h(h)
     {
     }
