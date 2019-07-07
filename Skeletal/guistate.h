@@ -19,6 +19,10 @@ struct GuiState
     bool loggerOpen = true;
     std::string logger;
 
+    void Initialize();
+
+    ~GuiState();
+
     void Update(agv::scene::Scene *scene,
                 agv::renderer::GLES3Renderer *renderer);
 };

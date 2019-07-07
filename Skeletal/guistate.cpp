@@ -8,6 +8,26 @@
 #include <Windows.h>
 #include "addon.h"
 
+# include <imgui_node_editor.h>
+// # define IMGUI_DEFINE_MATH_OPERATORS
+// # include <imgui_internal.h>
+
+namespace ed = ax::NodeEditor;
+
+static ed::EditorContext* g_Context = nullptr;
+
+void GuiState::Initialize()
+{
+    ed::Config config;
+    config.SettingsFile = "Simple.json";
+    g_Context = ed::CreateEditor(&config);
+}
+
+GuiState::~GuiState()
+{
+    ed::DestroyEditor(g_Context);
+}
+
 static std::wstring OpenDialog()
 {
     OPENFILENAME ofn;        // common dialog box structure
@@ -343,4 +363,41 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
     }
 
     AddOn();
+
+    ImGui::Begin("NodeEditor");
+    {
+        ed::SetCurrentEditor(g_Context);
+        ed::Begin("My Editor", ImVec2(0.0, 0.0f));
+
+        int uniqueId = 1;
+
+        // Start drawing nodes.
+        ed::BeginNode(uniqueId++);
+        ImGui::Text("Node A");
+        ed::BeginPin(uniqueId++, ed::PinKind::Input);
+        ImGui::Text("-> In");
+        ed::EndPin();
+        ImGui::SameLine();
+        ed::BeginPin(uniqueId++, ed::PinKind::Output);
+        ImGui::Text("Out ->");
+        ed::EndPin();
+        ed::EndNode();
+
+        // Start drawing nodes.
+        ed::BeginNode(uniqueId++);
+        ImGui::Text("Node B");
+        ed::BeginPin(uniqueId++, ed::PinKind::Input);
+        ImGui::Text("-> In");
+        ed::EndPin();
+        ImGui::SameLine();
+        ed::BeginPin(uniqueId++, ed::PinKind::Output);
+        ImGui::Text("Out ->");
+        ed::EndPin();
+        ed::EndNode();
+
+        ed::End();
+        ed::SetCurrentEditor(nullptr);
+
+        ImGui::End();
+    }
 }

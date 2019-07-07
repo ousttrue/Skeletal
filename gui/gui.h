@@ -5,11 +5,11 @@ namespace agv::gui
 
 class GUI
 {
-    bool m_initialized = false;
-
 public:
     GUI();
     ~GUI();
+
+    void Initialize(HWND hWnd);
 
     void MouseMove(int x, int y);
     void MouseLeftDown();
@@ -26,7 +26,7 @@ public:
 
     void SetScreenSize(int w, int h);
 
-    void Begin(HWND hWnd, float deltaSeconds);
+    void Begin(float deltaSeconds);
     void End();
 };
 

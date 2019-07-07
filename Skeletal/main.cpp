@@ -239,6 +239,9 @@ static int mainloop(HWND hwnd)
 
     bool loggerOpen = true;
 
+    g_gui->Initialize(hwnd);
+    g_guiState.Initialize();
+
     while (true)
     {
         // message pump
@@ -259,7 +262,7 @@ static int mainloop(HWND hwnd)
         lastTime = now;
 
         {
-            g_gui->Begin(hwnd, delta * 0.001f);
+            g_gui->Begin(delta * 0.001f);
 
             g_scene->Update(now);
             g_guiState.Update(g_scene, g_renderer);

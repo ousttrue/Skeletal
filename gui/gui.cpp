@@ -18,6 +18,15 @@ GUI::GUI()
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;  // We can honor io.WantSetMousePos requests (optional, rarely used)
 }
 
+void GUI::Initialize(HWND hWnd)
+{
+    //ImGui_ImplOpenGL3_CreateFontsTexture();
+
+    ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui_ImplWin32_Init(hWnd);
+    // m_initialized = true;
+}
+
 GUI::~GUI()
 {
     ImGui_ImplOpenGL3_Shutdown();
@@ -104,17 +113,8 @@ void GUI::SetScreenSize(int w, int h)
     io.DisplaySize = ImVec2((float)w, (float)h);
 }
 
-void GUI::Begin(HWND hWnd, float deltaSeconds)
+void GUI::Begin(float deltaSeconds)
 {
-    if (!m_initialized)
-    {
-        //ImGui_ImplOpenGL3_CreateFontsTexture();
-
-        ImGui_ImplOpenGL3_Init(glsl_version);
-        ImGui_ImplWin32_Init(hWnd);
-        m_initialized = true;
-    }
-
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplWin32_NewFrame();

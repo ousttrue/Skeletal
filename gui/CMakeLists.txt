@@ -21,6 +21,7 @@ FILE(GLOB SRC
     ${DEPENDENCIES}/imgui/examples/imgui_impl_win32.cpp
     ${DEPENDENCIES}/ImGuizmo/*.h
     ${DEPENDENCIES}/ImGuizmo/*.cpp
+    ${DEPENDENCIES}/imgui-node-editor/NodeEditor/Source/*
 	) 
 
 ADD_LIBRARY(${SUB_NAME} 
