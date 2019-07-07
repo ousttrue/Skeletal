@@ -103,6 +103,30 @@ static bool CanCreateLink(Pin *a, Pin *b)
     return true;
 }
 
+static ImColor GetIconColor(PinType type)
+{
+    switch (type)
+    {
+    default:
+    case PinType::Flow:
+        return ImColor(255, 255, 255);
+    case PinType::Bool:
+        return ImColor(220, 48, 48);
+    case PinType::Int:
+        return ImColor(68, 201, 156);
+    case PinType::Float:
+        return ImColor(147, 226, 74);
+    case PinType::String:
+        return ImColor(124, 21, 153);
+    case PinType::Object:
+        return ImColor(51, 150, 215);
+    case PinType::Function:
+        return ImColor(218, 0, 183);
+    case PinType::Delegate:
+        return ImColor(255, 48, 48);
+    }
+}
+
 struct Node
 {
     ed::NodeId ID;
@@ -119,30 +143,6 @@ struct Node
     Node(int id, const char *name, ImColor color = ImColor(255, 255, 255)) : ID(id), Name(name), Color(color), Type(NodeType::Blueprint), Size(0, 0)
     {
     }
-
-    ImColor GetIconColor(PinType type)
-    {
-        switch (type)
-        {
-        default:
-        case PinType::Flow:
-            return ImColor(255, 255, 255);
-        case PinType::Bool:
-            return ImColor(220, 48, 48);
-        case PinType::Int:
-            return ImColor(68, 201, 156);
-        case PinType::Float:
-            return ImColor(147, 226, 74);
-        case PinType::String:
-            return ImColor(124, 21, 153);
-        case PinType::Object:
-            return ImColor(51, 150, 215);
-        case PinType::Function:
-            return ImColor(218, 0, 183);
-        case PinType::Delegate:
-            return ImColor(255, 48, 48);
-        }
-    };
 
     void DrawPinIcon(const Pin &pin, bool connected, int alpha)
     {
@@ -1144,9 +1144,10 @@ void AddOnDraw(agv::renderer::GLES3Renderer *renderer)
         }
 
         for (auto &link : s_Links)
+        {
             ed::Link(link.ID, link.StartPinID, link.EndPinID, link.Color, 2.0f);
+        }
 
-#if 0
         if (!createNewNode)
         {
             if (ed::BeginCreate(ImColor(255, 255, 255), 2.0f))
@@ -1264,7 +1265,6 @@ void AddOnDraw(agv::renderer::GLES3Renderer *renderer)
             }
             ed::EndDelete();
         }
-#endif
 
         ImGui::SetCursorScreenPos(cursorTopLeft);
     }
