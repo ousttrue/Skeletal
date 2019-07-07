@@ -6,6 +6,7 @@
 #include <ax/Math2D.h>
 // #include <ax/Builders.h>
 // #include <ax/Widgets.h>
+#include <ax/Drawing.h>
 #include <string>
 #include <memory>
 #include <tuple>
@@ -119,45 +120,77 @@ struct Node
     {
     }
 
+    ImColor GetIconColor(PinType type)
+    {
+        switch (type)
+        {
+        default:
+        case PinType::Flow:
+            return ImColor(255, 255, 255);
+        case PinType::Bool:
+            return ImColor(220, 48, 48);
+        case PinType::Int:
+            return ImColor(68, 201, 156);
+        case PinType::Float:
+            return ImColor(147, 226, 74);
+        case PinType::String:
+            return ImColor(124, 21, 153);
+        case PinType::Object:
+            return ImColor(51, 150, 215);
+        case PinType::Function:
+            return ImColor(218, 0, 183);
+        case PinType::Delegate:
+            return ImColor(255, 48, 48);
+        }
+    };
+
     void DrawPinIcon(const Pin &pin, bool connected, int alpha)
     {
-#if 0
-    IconType iconType;
-    ImColor color = GetIconColor(pin.Type);
-    color.Value.w = alpha / 255.0f;
-    switch (pin.Type)
-    {
-    case PinType::Flow:
-        iconType = IconType::Flow;
-        break;
-    case PinType::Bool:
-        iconType = IconType::Circle;
-        break;
-    case PinType::Int:
-        iconType = IconType::Circle;
-        break;
-    case PinType::Float:
-        iconType = IconType::Circle;
-        break;
-    case PinType::String:
-        iconType = IconType::Circle;
-        break;
-    case PinType::Object:
-        iconType = IconType::Circle;
-        break;
-    case PinType::Function:
-        iconType = IconType::Circle;
-        break;
-    case PinType::Delegate:
-        iconType = IconType::Square;
-        break;
-    default:
-        return;
-    }
+        ax::Drawing::IconType iconType;
+        ImColor color = GetIconColor(pin.Type);
+        color.Value.w = alpha / 255.0f;
+        switch (pin.Type)
+        {
+        case PinType::Flow:
+            iconType = ax::Drawing::IconType::Flow;
+            break;
+        case PinType::Bool:
+            iconType = ax::Drawing::IconType::Circle;
+            break;
+        case PinType::Int:
+            iconType = ax::Drawing::IconType::Circle;
+            break;
+        case PinType::Float:
+            iconType = ax::Drawing::IconType::Circle;
+            break;
+        case PinType::String:
+            iconType = ax::Drawing::IconType::Circle;
+            break;
+        case PinType::Object:
+            iconType = ax::Drawing::IconType::Circle;
+            break;
+        case PinType::Function:
+            iconType = ax::Drawing::IconType::Circle;
+            break;
+        case PinType::Delegate:
+            iconType = ax::Drawing::IconType::Square;
+            break;
+        default:
+            return;
+        }
 
+#if 0
     ax::Widgets::Icon(ImVec2(s_PinIconSize, s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));
 #else
-        ImGui::Dummy(ImVec2(s_PinIconSize, s_PinIconSize));
+        auto size = ImVec2(s_PinIconSize, s_PinIconSize);
+        if (ImGui::IsRectVisible(size))
+        {
+            auto cursorPos = ImGui::GetCursorScreenPos();
+            auto drawList = ImGui::GetWindowDrawList();
+            ax::Drawing::DrawIcon(drawList, cursorPos, cursorPos + size, iconType, connected, color, ImColor(32, 32, 32, alpha));
+        }
+
+        ImGui::Dummy(size);
         // ax::Widgets::Icon(ImVec2(s_PinIconSize, s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));
 #endif
     };
@@ -984,30 +1017,6 @@ static bool Splitter(bool split_vertically, float thickness, float *size1, float
     bb.Max = bb.Min + CalcItemSize(split_vertically ? ImVec2(thickness, splitter_long_axis_size) : ImVec2(splitter_long_axis_size, thickness), 0.0f, 0.0f);
     return SplitterBehavior(bb, id, split_vertically ? ImGuiAxis_X : ImGuiAxis_Y, size1, size2, min_size1, min_size2, 0.0f);
 }
-
-ImColor GetIconColor(PinType type)
-{
-    switch (type)
-    {
-    default:
-    case PinType::Flow:
-        return ImColor(255, 255, 255);
-    case PinType::Bool:
-        return ImColor(220, 48, 48);
-    case PinType::Int:
-        return ImColor(68, 201, 156);
-    case PinType::Float:
-        return ImColor(147, 226, 74);
-    case PinType::String:
-        return ImColor(124, 21, 153);
-    case PinType::Object:
-        return ImColor(51, 150, 215);
-    case PinType::Function:
-        return ImColor(218, 0, 183);
-    case PinType::Delegate:
-        return ImColor(255, 48, 48);
-    }
-};
 
 void ShowStyleEditor(bool *show = nullptr)
 {

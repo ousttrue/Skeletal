@@ -12,6 +12,7 @@ FILE(GLOB SRC
     ${DEPENDENCIES}/imgui/imgui_internal.h
     ${DEPENDENCIES}/imgui/imconfig.h
     # ${DEPENDENCIES}/imgui-node-editor/Examples/Common/BlueprintUtilities/Source/ax/*
+    ${DEPENDENCIES}/imgui-node-editor/Examples/Common/BlueprintUtilities/Source/ax/Drawing.cpp
     ${DEPENDENCIES}/imgui/stb_rect_pack.h
     ${DEPENDENCIES}/imgui/stb_textedit.h
     ${DEPENDENCIES}/imgui/stb_truetype.h
@@ -38,5 +39,7 @@ TARGET_COMPILE_DEFINITIONS(${SUB_NAME} PUBLIC
 
 TARGET_INCLUDE_DIRECTORIES(${SUB_NAME} PUBLIC
     ../scene
+    .
     ${DEPENDENCIES}/imgui-node-editor/ThirdParty/stb_image
+    # ${DEPENDENCIES}/imgui-node-editor/Examples/Common/BlueprintUtilities/Source
 	)
