@@ -17,6 +17,8 @@ class GLES3Renderer;
 struct GuiState
 {
     bool loggerOpen = true;
+    bool assetsOpen = true;
+    bool modelOpen = true;
     std::string logger;
 
     void Update(agv::scene::Scene *scene,

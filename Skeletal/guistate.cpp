@@ -171,7 +171,11 @@ static void EditTransform(
 void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *renderer)
 {
     ImGuizmo::BeginFrame();
-    ImGui::Begin("scene", nullptr, ImGuiWindowFlags_MenuBar);
+    ////////////////////////////////////////////////////////////
+
+    ImGui::ShowDemoWindow();
+
+    if(ImGui::Begin("scene", &modelOpen, ImGuiWindowFlags_MenuBar))
     {
         if (ImGui::BeginMenuBar())
         {
@@ -199,25 +203,24 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
         {
             m_tree.Draw(model->Root);
         }
-
-        ImGui::End();
     }
+    ImGui::End();
 
     auto projection = scene->GetCamera()->GetMatrix();
     auto view = scene->GetCameraNode()->GetWorldMatrix();
     for (auto kv : m_tree.m_selection)
     {
-        ImGui::Begin("selected");
+        if(ImGui::Begin("selected"))
         {
             auto model = kv.second->GetWorldMatrix();
             EditTransform(projection, view, &model);
             kv.second->SetWorldMatrix(model);
-            ImGui::End();
         }
+        ImGui::End();
         break;
     }
 
-    ImGui::Begin("assets");
+    if(ImGui::Begin("assets", &assetsOpen, ImGuiWindowFlags_MenuBar))
     {
         auto model = scene->GetModel();
         if (model)
@@ -305,12 +308,10 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
                 ImGui::TreePop();
             }
         }
-        ImGui::End();
     }
+    ImGui::End();
 
-    ImGui::ShowDemoWindow();
-
-    ImGui::Begin("logger", &loggerOpen);
+    if(ImGui::Begin("logger", &loggerOpen, ImGuiWindowFlags_MenuBar))
     {
         ImGui::BeginChild("scrolling");
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 1));
@@ -339,8 +340,8 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
 
         ImGui::PopStyleVar();
         ImGui::EndChild();
-        ImGui::End();
     }
+    ImGui::End();
 
     AddOn();
 }
