@@ -117,14 +117,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
         break;
     }
 
-    case WM_SIZE:
-    {
-        auto w = LOWORD(lParam);
-        auto h = HIWORD(lParam);
-        g_gui->SetScreenSize(w, h);
-        return 0;
-    }
-
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
@@ -133,26 +125,34 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
         return 0;
     }
 
+    case WM_SIZE:
+    {
+        auto w = LOWORD(lParam);
+        auto h = HIWORD(lParam);
+        g_gui->SetScreenSize(w, h);
+        return 0;
+    }
+
     case WM_MOUSEMOVE:
     {
         auto x = GET_X_LPARAM(lParam);
         auto y = GET_Y_LPARAM(lParam);
         g_gui->MouseMove(x, y);
-        g_scene->GetMouseObserver()->MouseMove(x, y);
+        // g_scene->GetMouseObserver()->MouseMove(x, y);
         return 0;
     }
 
     case WM_LBUTTONDOWN:
     {
         m_capture.Down(MouseCapture::LEFT, hwnd);
-        if (g_gui->IsHover())
+        // if (g_gui->IsHover())
         {
             g_gui->MouseLeftDown();
         }
-        else
-        {
-            g_scene->GetMouseObserver()->MouseLeftDown();
-        }
+        // else
+        // {
+        //     g_scene->GetMouseObserver()->MouseLeftDown();
+        // }
         return 0;
     }
 
@@ -160,21 +160,21 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         m_capture.Up(MouseCapture::LEFT);
         g_gui->MouseLeftUp();
-        g_scene->GetMouseObserver()->MouseLeftUp();
+        // g_scene->GetMouseObserver()->MouseLeftUp();
         return 0;
     }
 
     case WM_MBUTTONDOWN:
     {
         m_capture.Down(MouseCapture::MIDDLE, hwnd);
-        if (g_gui->IsHover())
+        // if (g_gui->IsHover())
         {
             g_gui->MouseMiddleDown();
         }
-        else
-        {
-            g_scene->GetMouseObserver()->MouseMiddleDown();
-        }
+        // else
+        // {
+        //     g_scene->GetMouseObserver()->MouseMiddleDown();
+        // }
         return 0;
     }
 
@@ -182,21 +182,21 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         m_capture.Up(MouseCapture::MIDDLE);
         g_gui->MouseMiddleUp();
-        g_scene->GetMouseObserver()->MouseMiddleUp();
+        // g_scene->GetMouseObserver()->MouseMiddleUp();
         return 0;
     }
 
     case WM_RBUTTONDOWN:
     {
         m_capture.Down(MouseCapture::RIGHT, hwnd);
-        if (g_gui->IsHover())
+        // if (g_gui->IsHover())
         {
             g_gui->MouseRightDown();
         }
-        else
-        {
-            g_scene->GetMouseObserver()->MouseRightDown();
-        }
+        // else
+        // {
+        //     g_scene->GetMouseObserver()->MouseRightDown();
+        // }
         return 0;
     }
 
@@ -204,7 +204,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         m_capture.Up(MouseCapture::RIGHT);
         g_gui->MouseRightUp();
-        g_scene->GetMouseObserver()->MouseRightUp();
+        // g_scene->GetMouseObserver()->MouseRightUp();
         return 0;
     }
 
@@ -212,14 +212,14 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         auto d = GET_WHEEL_DELTA_WPARAM(wParam);
 
-        if (g_gui->IsHover())
+        // if (g_gui->IsHover())
         {
             g_gui->MouseWheel(d);
         }
-        else
-        {
-            g_scene->GetMouseObserver()->MouseWheel(d);
-        }
+        // else
+        // {
+        //     g_scene->GetMouseObserver()->MouseWheel(d);
+        // }
 
         return 0;
     }

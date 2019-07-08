@@ -238,12 +238,14 @@ void GUI::Begin(HWND hWnd, float deltaSeconds, agv::renderer::GLES3Renderer *ren
     Dockspace();
 
     // render centrarl wigets
-    if (ImGui::Begin("3DView", &m_openView))
+    if (ImGui::Begin("3DView", &m_openView,
+                     ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
     {
         // transfer MouseEvents
 
         // resize rendertarget
         auto size = ImGui::GetWindowSize();
+        // size.y -= 40; // title bar ?
         auto camera = scene->GetCamera();
         camera->SetViewPort(DirectX::XMINT4(0, 0,
                                             static_cast<int>(size.x),
@@ -256,7 +258,6 @@ void GUI::Begin(HWND hWnd, float deltaSeconds, agv::renderer::GLES3Renderer *ren
 
         // show render target
         ImGui::Image(result, size);
-        // ImGui::Dummy(size);
     }
     ImGui::End();
 }
