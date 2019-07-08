@@ -199,6 +199,27 @@ struct GLES3RendererImpl
 
         return vao;
     }
+
+    std::unordered_map<uint32_t, std::shared_ptr<GLES3FrameBufferObject>> m_camera_map;
+    std::shared_ptr<GLES3FrameBufferObject> GetOrCreateCamera(
+        uint32_t cameraID, int width, int height)
+    {
+        auto found = m_camera_map.find(cameraID);
+        std::shared_ptr<GLES3FrameBufferObject> fbo;
+        if (found != m_camera_map.end())
+        {
+            fbo = found->second;
+        }
+        else
+        {
+            fbo = std::make_shared<GLES3FrameBufferObject>();
+            m_camera_map.insert(std::make_pair(cameraID, fbo));
+        }
+
+        fbo->Resize(width, height);
+
+        return fbo;
+    }
 };
 
 GLES3Renderer::GLES3Renderer()
@@ -211,14 +232,7 @@ GLES3Renderer::~GLES3Renderer()
     delete m_impl;
 }
 
-void GLES3Renderer::Resize(int w, int h)
-{
-    LOGD << "resize: " << w << ", " << h;
-    m_width = w;
-    m_height = h;
-}
-
-void GLES3Renderer::DrawNode(const agv::scene::ICamera *camera, const agv::scene::Node *cameraNode, const agv::scene::Node *node)
+void GLES3Renderer::DrawNode(const agv::scene::RenderTargetInfo *info, const agv::scene::Node *node)
 {
     auto &meshGroup = node->MeshGroup;
     if (meshGroup)
@@ -236,23 +250,14 @@ void GLES3Renderer::DrawNode(const agv::scene::ICamera *camera, const agv::scene
                 {
                     shader->Use();
 
-                    auto projection = camera->GetMatrix();
-                    shader->SetUniformValue("ProjectionMatrix", projection);
+                    shader->SetUniformValue("ProjectionMatrix", info->Projection);
 
-                    auto &view = cameraNode->GetWorldMatrix();
-                    shader->SetUniformValue("ViewMatrix", view);
+                    shader->SetUniformValue("ViewMatrix", info->View);
 
                     auto &model = node->GetWorldMatrix();
                     shader->SetUniformValue("ModelMatrix", model);
 
-                    {
-                        // glm::mat4 mvp = projection * view * model;
-                        auto m = model.Load();
-                        auto v = view.Load();
-                        auto p = projection.Load();
-                        auto _mvp = DirectX::XMMatrixMultiply(DirectX::XMMatrixMultiply(m, v), p);
-                        shader->SetUniformValue("MVPMatrix", dxm::Matrix(_mvp));
-                    }
+                    shader->SetUniformValue("MVPMatrix", info->CalcMvp(model));
 
                     // set texture
                     material->Set();
@@ -268,21 +273,21 @@ void GLES3Renderer::DrawNode(const agv::scene::ICamera *camera, const agv::scene
     }
 }
 
-void GLES3Renderer::Draw(agv::scene::Scene *pScene)
+void *GLES3Renderer::Draw(const agv::scene::RenderTargetInfo *pInfo, agv::scene::Scene *pScene)
 {
+    auto &vp = pInfo->Viewport;
+    auto &clear = pInfo->ClearColor.Value;
+
+    auto camera = m_impl->GetOrCreateCamera(pInfo->CameraID, vp.z, vp.w);
+    camera->Bind();
+
     //
     // rendertarget
     //
-    glViewport(0, 0, m_width, m_height);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClearDepthf(1.0f);
+    glViewport(vp.x, vp.y, vp.z, vp.w);
+    glClearColor(1.0f, clear.y, clear.z, clear.w);
+    glClearDepthf(pInfo->ClearDepth);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //
-    // setup camera
-    //
-    auto camera = pScene->GetCamera();
-    auto cameraNode = pScene->GetCameraNode();
 
     //
     // Draw
@@ -294,20 +299,23 @@ void GLES3Renderer::Draw(agv::scene::Scene *pScene)
             for (int i = 0; i < count; ++i)
             {
                 auto node = pScene->GetGizmos(i);
-                DrawNode(camera, cameraNode, node);
+                DrawNode(pInfo, node);
             }
         }
 
-        DrawModel(camera, cameraNode, pScene->GetModel());
+        DrawModel(pInfo, pScene->GetModel());
     }
+
+    camera->Unbind();
+    return (void *)(int64_t)camera->GetTexture()->GetGLValue();
 }
 
-void GLES3Renderer::DrawModel(const agv::scene::ICamera *camera, const agv::scene::Node *cameraNode,
-                              agv::scene::Model *pModel)
+void GLES3Renderer::DrawModel(const agv::scene::RenderTargetInfo *pInfo,
+                              const agv::scene::Model *pModel)
 {
     for (auto &node : pModel->Nodes)
     {
-        DrawNode(camera, cameraNode, &*node);
+        DrawNode(pInfo, &*node);
     }
 }
 

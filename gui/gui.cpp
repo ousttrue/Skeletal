@@ -238,18 +238,25 @@ void GUI::Begin(HWND hWnd, float deltaSeconds, agv::renderer::GLES3Renderer *ren
     Dockspace();
 
     // render centrarl wigets
-    if(ImGui::Begin("3DView", &m_openView))
+    if (ImGui::Begin("3DView", &m_openView))
     {
         // transfer MouseEvents
 
         // resize rendertarget
         auto size = ImGui::GetWindowSize();
+        auto camera = scene->GetCamera();
+        camera->SetViewPort(DirectX::XMINT4(0, 0,
+                                            static_cast<int>(size.x),
+                                            static_cast<int>(size.y)));
+
+        auto &info = camera->GetRenderTargetInfo();
 
         // render and get rendertarget
-        renderer->Draw(scene);
+        auto result = renderer->Draw(&info, scene);
 
-        // ToDo
-        // ImGui::Image();
+        // show render target
+        ImGui::Image(result, size);
+        // ImGui::Dummy(size);
     }
     ImGui::End();
 }

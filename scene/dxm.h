@@ -42,6 +42,38 @@ struct Vec3
 };
 static_assert(sizeof(Vec3) == sizeof(XMFLOAT3));
 
+struct Vec4
+{
+    XMFLOAT4 Value;
+
+    float *data() { return &Value.x; }
+    const float *data() const { return &Value.x; }
+
+    Vec4(float x, float y, float z, float w)
+        : Value(x, y, z, w)
+    {
+    }
+
+    Vec4(const std::array<float, 4> &value)
+        : Vec4(value[0], value[1], value[2], value[3])
+    {
+    }
+
+    XMVECTOR Load() const
+    {
+        return XMLoadFloat4(&Value);
+    }
+
+    void Store(const XMVECTOR &value)
+    {
+        XMStoreFloat4(&Value, value);
+    }
+
+    static const Vec4 Zero;
+    static const Vec4 One;
+};
+static_assert(sizeof(Vec4) == sizeof(XMFLOAT4));
+
 struct Quaternion
 {
     XMFLOAT4 Value;

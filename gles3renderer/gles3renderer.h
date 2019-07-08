@@ -12,22 +12,20 @@ namespace renderer
 struct GLES3RendererImpl;
 class GLES3Renderer
 {
-    int m_width = 0;
-    int m_height = 0;
-
     GLES3RendererImpl *m_impl;
 
 public:
     GLES3Renderer();
     ~GLES3Renderer();
-    void Resize(int w, int h);
-    void Draw(agv::scene::Scene *pScene);
+
+    // draw to render target, then return render target
+    void *Draw(const agv::scene::RenderTargetInfo *pInfo, agv::scene::Scene *pScene);
 
     void *GetTexture(uint32_t id) const;
 
 private:
-    void DrawNode(const agv::scene::ICamera *camera, const agv::scene::Node *cameraNode, const agv::scene::Node *node);
-    void DrawModel(const agv::scene::ICamera *camera, const agv::scene::Node *cameraNode, agv::scene::Model *pModel);
+    void DrawNode(const agv::scene::RenderTargetInfo *pInfo, const agv::scene::Node *pNode);
+    void DrawModel(const agv::scene::RenderTargetInfo *pInfo, const agv::scene::Model *pModel);
 };
 } // namespace renderer
 } // namespace agv

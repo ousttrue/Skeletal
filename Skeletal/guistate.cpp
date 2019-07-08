@@ -206,14 +206,13 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
     }
     ImGui::End();
 
-    auto projection = scene->GetCamera()->GetMatrix();
-    auto view = scene->GetCameraNode()->GetWorldMatrix();
+    auto &info = scene->GetCamera()->GetRenderTargetInfo();
     for (auto kv : m_tree.m_selection)
     {
         if(ImGui::Begin("selected"))
         {
             auto model = kv.second->GetWorldMatrix();
-            EditTransform(projection, view, &model);
+            EditTransform(info.Projection, info.View, &model);
             kv.second->SetWorldMatrix(model);
         }
         ImGui::End();

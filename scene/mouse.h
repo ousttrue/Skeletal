@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include "dxm.h"
+#include "camera.h"
 
 
 namespace agv {
@@ -23,7 +24,7 @@ namespace agv {
 		class Node;
 		class OrbitMover : public IMouseObserver
 		{
-			std::shared_ptr<Node> m_node;
+			std::shared_ptr<CameraBase> m_camera;
 
 			float m_yaw = 0;
 			float m_pitch = 0;
@@ -38,8 +39,8 @@ namespace agv {
 			int m_mouseLastY = 0;
 
 		public:
-			OrbitMover(const std::shared_ptr<Node> &node)
-				: m_node(node)
+			OrbitMover(const std::shared_ptr<CameraBase> &camera)
+				: m_camera(camera)
 			{
 				Update();
 			}

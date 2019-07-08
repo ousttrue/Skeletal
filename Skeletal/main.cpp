@@ -121,8 +121,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     {
         auto w = LOWORD(lParam);
         auto h = HIWORD(lParam);
-        g_scene->GetCamera()->SetScreenSize(w, h);
-        g_renderer->Resize(w, h);
         g_gui->SetScreenSize(w, h);
         return 0;
     }

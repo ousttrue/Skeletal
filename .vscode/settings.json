@@ -17,6 +17,7 @@
         "LPSTR",
         "LRESULT",
         "Lenum",
+        "Lsizei",
         "Luint",
         "MBUTTONDOWN",
         "MBUTTONUP",
@@ -28,6 +29,7 @@
         "RBUTTONUP",
         "WNDCLASSEX",
         "XMFLOAT",
+        "XMINT",
         "XMMATRIX",
         "XMVECTOR",
         "nlohmann",
@@ -46,6 +48,7 @@
         "xhash": "cpp",
         "xstring": "cpp",
         "xtree": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "memory": "cpp"
     },
 }

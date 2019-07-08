@@ -17,8 +17,8 @@ class ObjectBase
 
     // noncopyable
     ObjectBase() = default;
-    ObjectBase(const ObjectBase&) = delete;
-    ObjectBase& operator=(const ObjectBase&) = delete;
+    ObjectBase(const ObjectBase &) = delete;
+    ObjectBase &operator=(const ObjectBase &) = delete;
 
 protected:
     ObjectBase(const std::string &name)
@@ -26,6 +26,10 @@ protected:
     {
         static uint32_t s_next_unique_id = 1;
         m_unique_id = s_next_unique_id++;
+    }
+
+    virtual ~ObjectBase()
+    {
     }
 
 public:

@@ -41,25 +41,14 @@ public:
     Scene();
 
 private:
-    std::shared_ptr<ICamera> m_camera;
+    std::shared_ptr<CameraBase> m_camera;
 
 public:
-    ICamera *GetCamera()
+    CameraBase *GetCamera()
     {
         if (!m_camera)
             return nullptr;
         return &*m_camera;
-    }
-
-private:
-    std::shared_ptr<Node> m_cameraNode;
-
-public:
-    const Node *GetCameraNode() const
-    {
-        if (!m_cameraNode)
-            return nullptr;
-        return &*m_cameraNode;
     }
 
 private:
