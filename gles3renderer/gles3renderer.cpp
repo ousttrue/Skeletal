@@ -273,7 +273,7 @@ void GLES3Renderer::DrawNode(const agv::scene::RenderTargetInfo *info, const agv
     }
 }
 
-void *GLES3Renderer::Draw(const agv::scene::RenderTargetInfo *pInfo, agv::scene::Scene *pScene)
+void GLES3Renderer::Begin(const agv::scene::RenderTargetInfo *pInfo, agv::scene::Scene *pScene)
 {
     auto &vp = pInfo->Viewport;
     auto &clear = pInfo->ClearColor.Value;
@@ -285,7 +285,7 @@ void *GLES3Renderer::Draw(const agv::scene::RenderTargetInfo *pInfo, agv::scene:
     // rendertarget
     //
     glViewport(vp.x, vp.y, vp.z, vp.w);
-    glClearColor(1.0f, clear.y, clear.z, clear.w);
+    glClearColor(clear.x, clear.y, clear.z, clear.w);
     glClearDepthf(pInfo->ClearDepth);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -305,7 +305,12 @@ void *GLES3Renderer::Draw(const agv::scene::RenderTargetInfo *pInfo, agv::scene:
 
         DrawModel(pInfo, pScene->GetModel());
     }
+}
 
+void *GLES3Renderer::End(const agv::scene::RenderTargetInfo *pInfo)
+{
+    auto &vp = pInfo->Viewport;
+    auto camera = m_impl->GetOrCreateCamera(pInfo->CameraID, vp.z, vp.w);
     camera->Unbind();
     return (void *)(int64_t)camera->GetTexture()->GetGLValue();
 }

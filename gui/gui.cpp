@@ -5,6 +5,7 @@
 #include <exception>
 #include <gles3renderer.h>
 #include <scene.h>
+#include <ImGuizmo.h>
 const char *glsl_version = "#version 300 es";
 
 namespace agv
@@ -106,6 +107,70 @@ void GUI::SetScreenSize(int w, int h)
 {
     ImGuiIO &io = ImGui::GetIO();
     io.DisplaySize = ImVec2((float)w, (float)h);
+}
+
+static void EditTransform(const ImVec2 &pos, const ImVec2 &size,
+                          const dxm::Matrix &projection,
+                          const dxm::Matrix &view,
+                          dxm::Matrix *pM)
+{
+    static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
+    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
+    if (ImGui::IsKeyPressed(90))
+        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+    if (ImGui::IsKeyPressed(69))
+        mCurrentGizmoOperation = ImGuizmo::ROTATE;
+    if (ImGui::IsKeyPressed(82)) // r Key
+        mCurrentGizmoOperation = ImGuizmo::SCALE;
+    if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+        mCurrentGizmoOperation = ImGuizmo::ROTATE;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+        mCurrentGizmoOperation = ImGuizmo::SCALE;
+    float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+    ImGuizmo::DecomposeMatrixToComponents(pM->data(), matrixTranslation, matrixRotation, matrixScale);
+    ImGui::InputFloat3("Tr", matrixTranslation, 3);
+    ImGui::InputFloat3("Rt", matrixRotation, 3);
+    ImGui::InputFloat3("Sc", matrixScale, 3);
+    ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, pM->data());
+
+    if (mCurrentGizmoOperation != ImGuizmo::SCALE)
+    {
+        if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
+            mCurrentGizmoMode = ImGuizmo::LOCAL;
+        ImGui::SameLine();
+        if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
+            mCurrentGizmoMode = ImGuizmo::WORLD;
+    }
+    static bool useSnap(false);
+    if (ImGui::IsKeyPressed(83))
+        useSnap = !useSnap;
+    ImGui::Checkbox("", &useSnap);
+    ImGui::SameLine();
+    DirectX::XMFLOAT3 snap = {0, 0, 0};
+    switch (mCurrentGizmoOperation)
+    {
+    case ImGuizmo::TRANSLATE:
+        // snap = config.mSnapTranslation;
+        ImGui::InputFloat3("Snap", &snap.x);
+        break;
+    case ImGuizmo::ROTATE:
+        // snap = config.mSnapRotation;
+        ImGui::InputFloat("Angle Snap", &snap.x);
+        break;
+    case ImGuizmo::SCALE:
+        // snap = config.mSnapScale;
+        ImGui::InputFloat("Scale Snap", &snap.x);
+        break;
+    }
+    ImGuiIO &io = ImGui::GetIO();
+    ImGuizmo::SetRect(pos.x, pos.y, size.x, size.y);
+    ImGuizmo::Manipulate(view.data(), projection.data(),
+                         mCurrentGizmoOperation, mCurrentGizmoMode, pM->data(), NULL,
+                         useSnap ? &snap.x : NULL);
 }
 
 // Demonstrate using DockSpace() to create an explicit docking node within an existing window.
@@ -237,6 +302,11 @@ void GUI::Begin(HWND hWnd, float deltaSeconds, agv::renderer::GLES3Renderer *ren
     // widgets...
     Dockspace();
 
+    ImVec2 pos;
+    ImVec2 size;
+    auto camera = scene->GetCamera();
+    auto &info = camera->GetRenderTargetInfo();
+
     // render centrarl wigets
     if (ImGui::Begin("3DView", &m_openView,
                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
@@ -265,28 +335,45 @@ void GUI::Begin(HWND hWnd, float deltaSeconds, agv::renderer::GLES3Renderer *ren
         mouse->MouseWheel(static_cast<int>(io.MouseWheel));
 
         // resize rendertarget
-        auto size = ImGui::GetWindowSize();
+        pos = ImGui::GetWindowPos();
+        size = ImGui::GetWindowSize();
         // size.y -= 40; // title bar ?
-        auto camera = scene->GetCamera();
         camera->SetViewPort(DirectX::XMINT4(0, 0,
                                             static_cast<int>(size.x),
                                             static_cast<int>(size.y)));
 
-        auto &info = camera->GetRenderTargetInfo();
-
         // render and get rendertarget
-        auto result = renderer->Draw(&info, scene);
+        renderer->Begin(&info, scene);
+
+        auto result = renderer->End(&info);
 
         // show render target
         ImGui::Image(result, size);
 
-        auto pos = ImGui::GetWindowPos();
-        auto cy = pos.y + size.y  * 0.5f;
+        auto cy = pos.y + size.y * 0.5f;
         auto &buf = ImGui::GetWindowDrawList()->VtxBuffer;
         for (int i = 0; i < buf.Size; i++)
             buf[i].pos.y += (cy - buf[i].pos.y) * 2;
     }
     ImGui::End();
+
+    if (m_openView)
+    {
+        // gizmo
+        // auto &info = scene->GetCamera()->GetRenderTargetInfo();
+        ImGuizmo::BeginFrame();
+        if (ImGui::Begin("selected"))
+        {
+            for (auto kv : scene->m_selection)
+            {
+                auto model = kv.second->GetWorldMatrix();
+                EditTransform(pos, size, info.Projection, info.View, &model);
+                kv.second->SetWorldMatrix(model);
+                break;
+            }
+        }
+        ImGui::End();
+    }
 }
 
 void GUI::End()

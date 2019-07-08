@@ -3,7 +3,6 @@
 #include <gles3renderer.h>
 #include <imgui.h>
 #include <imgui_widgets.cpp>
-#include <ImGuizmo.h>
 #include <memory>
 #include <Windows.h>
 #include "addon.h"
@@ -38,15 +37,13 @@ static std::wstring OpenDialog()
 struct NodeTreeDrawer
 {
     // int selection_mask = (1 << 2); // Dumb representation of what may be user-side selection state. You may carry selection state inside or outside your objects in whatever format you see fit.
-    std::shared_ptr<agv::scene::Node> m_root;
-    std::unordered_map<uint32_t, std::shared_ptr<agv::scene::Node>> m_selection;
     std::shared_ptr<agv::scene::Node> m_clicked;
 
-    void DrawRecursive(const std::shared_ptr<agv::scene::Node> &node)
+    void DrawRecursive(const agv::scene::Scene *pScene, const std::shared_ptr<agv::scene::Node> &node)
     {
         // Disable the default open on single-click behavior and pass in Selected flag according to our selection state.
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-        if (m_selection.find(node->GetID()) != m_selection.end())
+        if (pScene->IsSelected(node->GetID()))
         {
             node_flags |= ImGuiTreeNodeFlags_Selected;
         }
@@ -67,7 +64,7 @@ struct NodeTreeDrawer
         {
             for (auto &child : *node)
             {
-                DrawRecursive(child);
+                DrawRecursive(pScene, child);
             }
 
             ImGui::TreePop();
@@ -75,20 +72,14 @@ struct NodeTreeDrawer
     }
 
     void
-    Draw(const std::shared_ptr<agv::scene::Node> &node)
+    Draw(agv::scene::Scene *pScene, const std::shared_ptr<agv::scene::Node> &node)
     {
         // clear
-        if (node != m_root)
-        {
-            // clear selection
-            m_root = node;
-            m_selection.clear();
-        }
         m_clicked = nullptr;
 
         // indent
         ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, ImGui::GetFontSize());
-        DrawRecursive(node);
+        DrawRecursive(pScene, node);
         ImGui::PopStyleVar();
 
         if (m_clicked)
@@ -96,81 +87,16 @@ struct NodeTreeDrawer
             // update selection
             if (!ImGui::GetIO().KeyCtrl)
             {
-                m_selection.clear();
+                pScene->ClearSelection();
             }
-            m_selection[m_clicked->GetID()] = m_clicked;
+            pScene->Select(m_clicked);
         }
     }
 };
 static NodeTreeDrawer m_tree;
 
-static void EditTransform(
-    const dxm::Matrix &projection,
-    const dxm::Matrix &view,
-    dxm::Matrix *pM)
-{
-    static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::ROTATE);
-    static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
-    if (ImGui::IsKeyPressed(90))
-        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-    if (ImGui::IsKeyPressed(69))
-        mCurrentGizmoOperation = ImGuizmo::ROTATE;
-    if (ImGui::IsKeyPressed(82)) // r Key
-        mCurrentGizmoOperation = ImGuizmo::SCALE;
-    if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
-        mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
-        mCurrentGizmoOperation = ImGuizmo::ROTATE;
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
-        mCurrentGizmoOperation = ImGuizmo::SCALE;
-    float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-    ImGuizmo::DecomposeMatrixToComponents(pM->data(), matrixTranslation, matrixRotation, matrixScale);
-    ImGui::InputFloat3("Tr", matrixTranslation, 3);
-    ImGui::InputFloat3("Rt", matrixRotation, 3);
-    ImGui::InputFloat3("Sc", matrixScale, 3);
-    ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, pM->data());
-
-    if (mCurrentGizmoOperation != ImGuizmo::SCALE)
-    {
-        if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
-            mCurrentGizmoMode = ImGuizmo::LOCAL;
-        ImGui::SameLine();
-        if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
-            mCurrentGizmoMode = ImGuizmo::WORLD;
-    }
-    static bool useSnap(false);
-    if (ImGui::IsKeyPressed(83))
-        useSnap = !useSnap;
-    ImGui::Checkbox("", &useSnap);
-    ImGui::SameLine();
-    DirectX::XMFLOAT3 snap = {0, 0, 0};
-    switch (mCurrentGizmoOperation)
-    {
-    case ImGuizmo::TRANSLATE:
-        // snap = config.mSnapTranslation;
-        ImGui::InputFloat3("Snap", &snap.x);
-        break;
-    case ImGuizmo::ROTATE:
-        // snap = config.mSnapRotation;
-        ImGui::InputFloat("Angle Snap", &snap.x);
-        break;
-    case ImGuizmo::SCALE:
-        // snap = config.mSnapScale;
-        ImGui::InputFloat("Scale Snap", &snap.x);
-        break;
-    }
-    ImGuiIO &io = ImGui::GetIO();
-    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-    ImGuizmo::Manipulate(view.data(), projection.data(),
-                         mCurrentGizmoOperation, mCurrentGizmoMode, pM->data(), NULL,
-                         useSnap ? &snap.x : NULL);
-}
-
 void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *renderer)
 {
-    ImGuizmo::BeginFrame();
     ////////////////////////////////////////////////////////////
 
     ImGui::ShowDemoWindow();
@@ -201,23 +127,10 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
         auto model = scene->GetModel();
         if (model)
         {
-            m_tree.Draw(model->Root);
+            m_tree.Draw(scene, model->Root);
         }
     }
     ImGui::End();
-
-    auto &info = scene->GetCamera()->GetRenderTargetInfo();
-    for (auto kv : m_tree.m_selection)
-    {
-        if(ImGui::Begin("selected"))
-        {
-            auto model = kv.second->GetWorldMatrix();
-            EditTransform(info.Projection, info.View, &model);
-            kv.second->SetWorldMatrix(model);
-        }
-        ImGui::End();
-        break;
-    }
 
     if(ImGui::Begin("assets", &assetsOpen, ImGuiWindowFlags_MenuBar))
     {

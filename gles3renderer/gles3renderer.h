@@ -19,7 +19,8 @@ public:
     ~GLES3Renderer();
 
     // draw to render target, then return render target
-    void *Draw(const agv::scene::RenderTargetInfo *pInfo, agv::scene::Scene *pScene);
+    void Begin(const agv::scene::RenderTargetInfo *pInfo, agv::scene::Scene *pScene);
+    void *End(const agv::scene::RenderTargetInfo *pInfo);
 
     void *GetTexture(uint32_t id) const;
 

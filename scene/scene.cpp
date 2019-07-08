@@ -87,6 +87,7 @@ void Scene::Load(const std::wstring &path)
     LOGI << "load: " << path;
 
     m_model = Model::Load(storage);
+    ClearSelection();
 }
 } // namespace scene
 } // namespace agv

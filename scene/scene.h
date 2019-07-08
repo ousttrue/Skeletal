@@ -79,6 +79,23 @@ public:
             return nullptr;
         return &*m_mouseObserver;
     }
+
+    std::unordered_map<uint32_t, std::shared_ptr<agv::scene::Node>> m_selection;
+
+    void Select(const std::shared_ptr<Node> &node)
+    {
+        m_selection[node->GetID()] = node;
+    }
+
+    bool IsSelected(uint32_t id) const
+    {
+        return m_selection.find(id) != m_selection.end();
+    }
+
+    void ClearSelection()
+    {
+        m_selection.clear();
+    }
 };
 } // namespace scene
 } // namespace agv
