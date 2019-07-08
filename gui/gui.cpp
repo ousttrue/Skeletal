@@ -242,6 +242,27 @@ void GUI::Begin(HWND hWnd, float deltaSeconds, agv::renderer::GLES3Renderer *ren
                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
     {
         // transfer MouseEvents
+        auto &io = ImGui::GetIO();
+        auto mouse = scene->GetMouseObserver();
+        auto mousePos = ImGui::GetMousePos();
+        mouse->MouseMove(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
+        if (io.MouseDown[1])
+        {
+            mouse->MouseRightDown();
+        }
+        if (io.MouseReleased[1])
+        {
+            mouse->MouseRightUp();
+        }
+        if (io.MouseDown[2])
+        {
+            mouse->MouseMiddleDown();
+        }
+        if (io.MouseReleased[2])
+        {
+            mouse->MouseMiddleUp();
+        }
+        mouse->MouseWheel(static_cast<int>(io.MouseWheel));
 
         // resize rendertarget
         auto size = ImGui::GetWindowSize();
@@ -258,6 +279,12 @@ void GUI::Begin(HWND hWnd, float deltaSeconds, agv::renderer::GLES3Renderer *ren
 
         // show render target
         ImGui::Image(result, size);
+
+        auto pos = ImGui::GetWindowPos();
+        auto cy = pos.y + size.y  * 0.5f;
+        auto &buf = ImGui::GetWindowDrawList()->VtxBuffer;
+        for (int i = 0; i < buf.Size; i++)
+            buf[i].pos.y += (cy - buf[i].pos.y) * 2;
     }
     ImGui::End();
 }
