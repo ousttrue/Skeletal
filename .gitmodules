@@ -7,3 +7,6 @@
 [submodule "dependencies/ImGuizmo"]
 	path = dependencies/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "dependencies/im3d"]
+	path = dependencies/im3d
+	url = https://github.com/john-chapman/im3d.git
