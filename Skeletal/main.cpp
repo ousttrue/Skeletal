@@ -253,68 +253,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-static int mainloop(HWND hwnd)
-{
-    EglApp app(hwnd);
-    LOGD << "egl initialized";
-
-    DWORD lastTime = 0;
-
-    bool loggerOpen = true;
-
-    while (true)
-    {
-        // message pump
-        MSG msg;
-        while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
-        {
-            if (!GetMessage(&msg, NULL, 0, 0))
-            {
-                return (int)msg.wParam;
-            }
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-
-        // rendering
-        auto now = timeGetTime();
-        auto delta = now - lastTime;
-        lastTime = now;
-
-        {
-            g_scene->Update(now);
-            g_gui->Begin(hwnd, delta * 0.001f,
-                         g_renderer, g_scene);
-
-            g_guiState.Update(g_scene, g_renderer);
-
-            g_gui->End();
-        }
-        app.present();
-    }
-
-    // never reach here
-    return 0;
-}
-
-static std::vector<uint8_t> GetResource(HINSTANCE hInst, int id,
-                                        const wchar_t *resource_type)
-{
-    auto hRes = FindResource(hInst, MAKEINTRESOURCE(id), resource_type);
-    auto hMem = LoadResource(hInst, hRes);
-    auto size = SizeofResource(hInst, hRes);
-    auto locked = LockResource(hMem);
-    std::vector<uint8_t> data(size);
-    memcpy(data.data(), locked, size);
-    FreeResource(hMem);
-    return data;
-}
-
-static std::string to_string(const std::vector<uint8_t> &src)
-{
-    return std::string(src.begin(), src.end());
-}
-
 static std::wstring SjisToUnicode(const std::string &src)
 {
     auto size = MultiByteToWideChar(CP_OEMCP, 0, src.c_str(), -1, NULL, 0);
@@ -393,5 +331,44 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     windowplacement::Restore(hwnd, SW_SHOWNORMAL);
 
-    return mainloop(hwnd);
+    EglApp app(hwnd);
+    LOGD << "egl initialized";
+
+    DWORD lastTime = 0;
+
+    bool loggerOpen = true;
+
+    while (true)
+    {
+        // message pump
+        MSG msg;
+        while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+        {
+            if (!GetMessage(&msg, NULL, 0, 0))
+            {
+                return (int)msg.wParam;
+            }
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+
+        // rendering
+        auto now = timeGetTime();
+        auto delta = now - lastTime;
+        lastTime = now;
+
+        {
+            g_scene->Update(now);
+            g_gui->Begin(hwnd, delta * 0.001f,
+                         g_renderer, g_scene);
+
+            g_guiState.Update(g_scene, g_renderer);
+
+            g_gui->End();
+        }
+        app.present();
+    }
+
+    // never reach here
+    return 0;
 }
