@@ -1,3 +1,4 @@
+R""(
 #version 300 es
 precision mediump float;                   
 in vec3 POSITION;
@@ -19,3 +20,4 @@ void main()
     f_Normal = (ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(NORMAL, 0)).xyz;
     f_TexCoord = TEXCOORD_0;
 }
+)""

@@ -1,6 +1,5 @@
 #include <Windows.h>
 #include <windowsx.h>
-#include "resource.h"
 #include "eglapp.h"
 #include "save_windowplacement.h"
 #include "guistate.h"
@@ -21,6 +20,31 @@
 const auto RESOURCE_TYPE = L"SHADERSOURCE";
 const auto CLASS_NAME = L"SkeletalWindow";
 const auto WINDOW_NAME = L"Skeletal";
+
+const std::string g_gizmo_vs =
+#include "../shaders/gizmo.vs"
+    ;
+const std::string g_gizmo_fs =
+#include "../shaders/gizmo.fs"
+    ;
+const std::string g_unlit_vs =
+#include "../shaders/unlit.vs"
+    ;
+const std::string g_unlit_fs =
+#include "../shaders/unlit.fs"
+    ;
+
+std::string trim(const std::string &src)
+{
+    auto it = src.begin();
+    for(; it!=src.end(); ++it)
+    {
+         if(!isspace(*it)){
+             break;
+         }
+    }
+    return std::string(it, src.end());
+}
 
 ///
 /// globals
@@ -335,12 +359,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     agv::renderer::ShaderSourceManager::Instance.SetSource(
         agv::scene::ShaderType::gizmo,
-        to_string(GetResource(hInstance, ID_GIZMO_VS, RESOURCE_TYPE)),
-        to_string(GetResource(hInstance, ID_GIZMO_FS, RESOURCE_TYPE)));
+        trim(g_gizmo_vs),
+        trim(g_gizmo_fs));
     agv::renderer::ShaderSourceManager::Instance.SetSource(
         agv::scene::ShaderType::unlit,
-        to_string(GetResource(hInstance, ID_UNLIT_VS, RESOURCE_TYPE)),
-        to_string(GetResource(hInstance, ID_UNLIT_FS, RESOURCE_TYPE)));
+        trim(g_unlit_vs),
+        trim(g_unlit_fs));
 
     agv::scene::Scene scene;
 

@@ -1,3 +1,4 @@
+R""(
 #version 300 es
 in vec3 POSITION;   
 in vec3 COLOR_0;
@@ -15,3 +16,4 @@ void main()
 
     f_Color = COLOR_0;
 }                           
+)""
