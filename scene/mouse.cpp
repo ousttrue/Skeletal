@@ -106,6 +106,8 @@ void OrbitMover::Update()
 	auto r = DirectX::XMMatrixMultiply(yaw, pitch);
     auto mul = DirectX::XMMatrixMultiply(r, t);
     m_camera->GetRenderTargetInfo().View = mul;
+
+    m_camera->GetRenderTargetInfo().View2 = DirectX::XMMatrixTranspose(mul);
 }
 } // namespace scene
 } // namespace agv

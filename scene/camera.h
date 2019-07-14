@@ -14,6 +14,7 @@ public:
     uint32_t CameraID = 0;
     dxm::Matrix Projection = dxm::Matrix::Identity;
     dxm::Matrix View = dxm::Matrix::Identity;
+    dxm::Matrix View2 = dxm::Matrix::Identity;
     DirectX::XMINT4 Viewport = {0, 0, 100, 100};
     dxm::Vec4 ClearColor = dxm::Vec4::Zero;
     float ClearDepth = 1.0f;
@@ -89,8 +90,32 @@ public:
 
     void Calc()
     {
-        auto m = DirectX::XMMatrixPerspectiveFovRH(DirectX::XMConvertToRadians(m_fovYDegree), m_aspect, m_near, m_far);
-        m_info.Projection.Store(m);
+        // m_info.Projection = DirectX::XMMatrixPerspectiveFovRH(DirectX::XMConvertToRadians(m_fovYDegree), m_aspect, m_near, m_far);
+
+        const float ar = m_aspect;
+        const float zNear = m_near;
+        const float zFar = m_far;
+        const float f = 1.0f / tan(DirectX::XMConvertToRadians(m_fovYDegree / 2.0));
+
+        m_info.Projection.Value._11 = f / ar;
+        m_info.Projection.Value._12 = 0.0f;
+        m_info.Projection.Value._13 = 0.0f;
+        m_info.Projection.Value._14 = 0.0f;
+
+        m_info.Projection.Value._21 = 0.0f;
+        m_info.Projection.Value._22 = f;
+        m_info.Projection.Value._23 = 0.0f;
+        m_info.Projection.Value._24 = 0.0f;
+
+        m_info.Projection.Value._31 = 0.0f;
+        m_info.Projection.Value._32 = 0.0f;
+        m_info.Projection.Value._33 = (zNear + zFar) / (zNear - zFar);
+        m_info.Projection.Value._34 = -1;
+
+        m_info.Projection.Value._41 = 0.0f;
+        m_info.Projection.Value._42 = 0.0f;
+        m_info.Projection.Value._43 = (2 * zFar * zNear) / (zNear - zFar);
+        m_info.Projection.Value._44 = 0.0f;
     }
 };
 } // namespace scene
