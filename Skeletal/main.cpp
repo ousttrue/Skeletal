@@ -37,11 +37,12 @@ const std::string g_unlit_fs =
 std::string trim(const std::string &src)
 {
     auto it = src.begin();
-    for(; it!=src.end(); ++it)
+    for (; it != src.end(); ++it)
     {
-         if(!isspace(*it)){
-             break;
-         }
+        if (!isspace(*it))
+        {
+            break;
+        }
     }
     return std::string(it, src.end());
 }
@@ -341,7 +342,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     plog::init(plog::verbose, &appender);
 
     // setup window
-    WNDCLASSEX wndclass;
+    WNDCLASSEX wndclass = {0};
     wndclass.cbSize = sizeof(WNDCLASSEX);
     wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     wndclass.lpfnWndProc = WndProc;
@@ -349,7 +350,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     wndclass.cbWndExtra = 0;
     wndclass.hInstance = GetModuleHandle(NULL);
     wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
+    // wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
     wndclass.hbrBackground = NULL;
     wndclass.lpszMenuName = NULL;
     wndclass.lpszClassName = CLASS_NAME;
