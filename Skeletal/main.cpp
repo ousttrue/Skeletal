@@ -51,6 +51,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         scene.Load(SjisToUnicode(__argv[1]));
     }
 
+    float startTime = 0;
     float lastTime = 0;
     while (window.IsRunning())
     {
@@ -58,7 +59,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         auto now = window.GetTimeSeconds();
         auto delta = now - lastTime;
         lastTime = now;
-        scene.Update(now);
+        if(startTime==0)
+        {
+            startTime = lastTime;
+        }
+        scene.Update(now - startTime);
 
         auto state = window.GetState();
 

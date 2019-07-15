@@ -120,7 +120,7 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
             ImGui::EndMenuBar();
         }
 
-        ImGui::Text("time: %d", scene->GetTime());
+        ImGui::Text("time: %0.3f", scene->GetTime());
         ImGui::Text("fps: %d", scene->GetFps());
 
         auto model = scene->GetModel();
