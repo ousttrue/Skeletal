@@ -21,6 +21,7 @@ FILE(GLOB SRC
     ${DEPENDENCIES}/imgui/examples/imgui_impl_win32.cpp
     ${DEPENDENCIES}/ImGuizmo/*.h
     ${DEPENDENCIES}/ImGuizmo/*.cpp
+    ${DEPENDENCIES}/im3d/im3d.cpp
 	) 
 
 ADD_LIBRARY(${SUB_NAME} 
@@ -30,12 +31,15 @@ TARGET_COMPILE_DEFINITIONS(${SUB_NAME} PUBLIC
 	UNICODE=1
 	_UNICODE=1
     USE_GL_ES3
-    IMGUI_IMPL_OPENGL_ES3
     GL_GLEXT_PROTOTYPES
+    IMGUI_IMPL_OPENGL_ES3
+    IM3D_VERTEX_ALIGNMENT=16
 	)
 
 TARGET_INCLUDE_DIRECTORIES(${SUB_NAME} PUBLIC
-    ../imgui
+    ../dependencies/imgui
+    ../dependencies/ImGuizmo
+    ../dependencies/im3d
     ../scene
     ../gles3renderer
 	)

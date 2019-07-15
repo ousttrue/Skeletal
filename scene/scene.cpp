@@ -11,9 +11,6 @@ Scene::Scene()
 {
     m_gizmoMaterial = std::make_shared<Material>("_gizmo");
 
-    m_camera = PerspectiveCamera::Create("main");
-    m_mouseObserver = std::make_shared<OrbitMover>(m_camera);
-
     Setup();
 }
 

@@ -1,6 +1,8 @@
 #include "gui.h"
 #include "window_state.h"
 #include "guistate.h"
+#include "orbit_camera.h"
+#include "im3d_gui.h"
 #include <imgui.h>
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_win32.h>
@@ -9,6 +11,7 @@
 #include <scene.h>
 #include <ImGuizmo.h>
 #include <imgui_internal.h>
+#include <plog/Log.h>
 
 const char *glsl_version = "#version 300 es";
 
@@ -159,6 +162,8 @@ class GUIImpl
     GuiState m_guiState;
     plog::ImGuiAppender<plog::TxtFormatter> m_appender;
     agv::renderer::GLES3Renderer m_renderer;
+    Im3dGui m_im3d;
+    OrbitCamera m_camera;
 
 public:
     GUIImpl(void *hWnd)
@@ -207,8 +212,6 @@ public:
 
         ImVec2 pos;
         ImVec2 size;
-        auto camera = scene->GetCamera();
-        auto &info = camera->GetRenderTargetInfo();
 
         // render centrarl wigets
         if (ImGui::Begin("3DView", &m_openView,
@@ -216,37 +219,17 @@ public:
         {
             // transfer MouseEvents
             auto &io = ImGui::GetIO();
-            auto mouse = scene->GetMouseObserver();
-            auto mousePos = ImGui::GetMousePos();
-            mouse->MouseMove(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-            if (io.MouseDown[1])
-            {
-                mouse->MouseRightDown();
-            }
-            if (io.MouseReleased[1])
-            {
-                mouse->MouseRightUp();
-            }
-            if (io.MouseDown[2])
-            {
-                mouse->MouseMiddleDown();
-            }
-            if (io.MouseReleased[2])
-            {
-                mouse->MouseMiddleUp();
-            }
-            mouse->MouseWheel(static_cast<int>(io.MouseWheel));
+            auto size = ImGui::GetWindowSize();
+            m_camera.SetScreenSize(size.x, size.y);
 
-            // resize rendertarget
-            pos = ImGui::GetWindowPos();
-            size = ImGui::GetWindowSize();
-            // size.y -= 40; // title bar ?
-            camera->SetViewPort(DirectX::XMINT4(0, 0,
-                                                static_cast<int>(size.x),
-                                                static_cast<int>(size.y)));
+            auto mouse = state->Mouse;
+            auto mousePos = ImGui::GetMousePos();
+            mouse.X = (int)mousePos.x;
+            mouse.Y = (int)mousePos.y;
+            m_camera.MouseInput(mouse);
 
             // render and get rendertarget
-            m_renderer.Begin(&info, scene);
+            m_renderer.Begin(&m_camera.state, scene);
 
             auto firstSelection = scene->m_selection.begin();
             if (m_openView && firstSelection != scene->m_selection.end())
@@ -255,14 +238,17 @@ public:
                 // gizmo
                 // auto &info = scene->GetCamera()->GetRenderTargetInfo();
                 {
+                    // m_im3d.NewFrame();
+
                     auto model = selection->GetWorldMatrix();
-                    info.CalcMvp(model);
+                    // auto mvp = info.CalcModelViewProjection(model.array());
                     // g_guizmo.ShowGuizmo(m_hWnd, ImVec2(0, 0), size, info.Projection, info.View, &model);
+
                     selection->SetWorldMatrix(model);
                 }
             }
 
-            auto result = m_renderer.End(&info);
+            auto result = m_renderer.End(&m_camera.state);
 
             // show render target. vertical flip
             ImGui::Image(result, size, ImVec2(0, 1), ImVec2(1, 0));

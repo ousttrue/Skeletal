@@ -21,8 +21,8 @@ public:
     static std::shared_ptr<GLES3Shader> Create(int shaderType);
 
     uint32_t GetUniformLocation(const std::string &name);
-    void SetUniformValue(uint32_t location, const dxm::Matrix &m);
-    void SetUniformValue(const std::string &name, const dxm::Matrix &m);
+    void SetUniformValue(uint32_t location, const float m[16]);
+    void SetUniformValue(const std::string &name, const float m[16]);
     void SetUniformValue(const std::string &name, int value);
 
     void Use();

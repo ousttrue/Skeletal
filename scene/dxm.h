@@ -111,6 +111,14 @@ struct Matrix
 
     float *data() { return &Value._11; }
     const float *data() const { return &Value._11; }
+    const std::array<float, 16> array() const
+    {
+        return std::array<float, 16>{
+            Value._11, Value._12, Value._13, Value._14,
+            Value._21, Value._22, Value._23, Value._24,
+            Value._31, Value._32, Value._33, Value._34,
+            Value._41, Value._42, Value._43, Value._44};
+    }
 
     Matrix(
         float _11, float _12, float _13, float _14,

@@ -5,6 +5,10 @@
 #include <unordered_map>
 #include "shadersourcemanager.h"
 
+namespace camera
+{
+    struct CameraState;
+};
 namespace agv
 {
 namespace renderer
@@ -19,14 +23,14 @@ public:
     ~GLES3Renderer();
 
     // draw to render target, then return render target
-    void Begin(const agv::scene::RenderTargetInfo *pInfo, agv::scene::Scene *pScene);
-    void *End(const agv::scene::RenderTargetInfo *pInfo);
+    void Begin(const camera::CameraState *pInfo, agv::scene::Scene *pScene);
+    void *End(const camera::CameraState *pInfo);
 
     void *GetTexture(uint32_t id) const;
 
 private:
-    void DrawNode(const agv::scene::RenderTargetInfo *pInfo, const agv::scene::Node *pNode);
-    void DrawModel(const agv::scene::RenderTargetInfo *pInfo, const agv::scene::Model *pModel);
+    void DrawNode(const camera::CameraState *pInfo, const agv::scene::Node *pNode);
+    void DrawModel(const camera::CameraState *pInfo, const agv::scene::Model *pModel);
 };
 } // namespace renderer
 } // namespace agv

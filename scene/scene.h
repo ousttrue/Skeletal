@@ -1,6 +1,4 @@
 #pragma once
-#include "camera.h"
-#include "mouse.h"
 #include "mesh.h"
 #include "node_animation.h"
 #include "node.h"
@@ -41,17 +39,6 @@ public:
     Scene();
 
 private:
-    std::shared_ptr<CameraBase> m_camera;
-
-public:
-    CameraBase *GetCamera()
-    {
-        if (!m_camera)
-            return nullptr;
-        return &*m_camera;
-    }
-
-private:
     std::vector<std::shared_ptr<Node>> m_gizmos;
 
 public:
@@ -68,17 +55,6 @@ public:
     void Update(float now);
     void CreateDefaultScene();
     void Load(const std::wstring &path);
-
-private:
-    std::shared_ptr<IMouseObserver> m_mouseObserver;
-
-public:
-    IMouseObserver *GetMouseObserver()
-    {
-        if (!m_mouseObserver)
-            return nullptr;
-        return &*m_mouseObserver;
-    }
 
     std::unordered_map<uint32_t, std::shared_ptr<agv::scene::Node>> m_selection;
 

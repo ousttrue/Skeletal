@@ -4,6 +4,7 @@
 #include "gles3shader.h"
 #include "gles3texture.h"
 #include "scene.h"
+#include <camera_state.h>
 #define GL_GLEXT_PROTOTYPES
 #include <GLES3/gl3.h>
 #include <vector>
@@ -232,7 +233,7 @@ GLES3Renderer::~GLES3Renderer()
     delete m_impl;
 }
 
-void GLES3Renderer::DrawNode(const agv::scene::RenderTargetInfo *info, const agv::scene::Node *node)
+void GLES3Renderer::DrawNode(const camera::CameraState *info, const agv::scene::Node *node)
 {
     auto &meshGroup = node->MeshGroup;
     if (meshGroup)
@@ -250,14 +251,14 @@ void GLES3Renderer::DrawNode(const agv::scene::RenderTargetInfo *info, const agv
                 {
                     shader->Use();
 
-                    shader->SetUniformValue("ProjectionMatrix", info->Projection);
+                    shader->SetUniformValue("ProjectionMatrix", info->projection.data());
 
-                    shader->SetUniformValue("ViewMatrix", info->View);
+                    shader->SetUniformValue("ViewMatrix", info->view.data());
 
-                    auto &model = node->GetWorldMatrix();
-                    shader->SetUniformValue("ModelMatrix", model);
+                    auto model = node->GetWorldMatrix().array();
+                    shader->SetUniformValue("ModelMatrix", model.data());
 
-                    shader->SetUniformValue("MVPMatrix", info->CalcMvp(model));
+                    shader->SetUniformValue("MVPMatrix", info->CalcModelViewProjection(model).data());
 
                     // set texture
                     material->Set();
@@ -273,20 +274,21 @@ void GLES3Renderer::DrawNode(const agv::scene::RenderTargetInfo *info, const agv
     }
 }
 
-void GLES3Renderer::Begin(const agv::scene::RenderTargetInfo *pInfo, agv::scene::Scene *pScene)
+void GLES3Renderer::Begin(const camera::CameraState *pInfo, agv::scene::Scene *pScene)
 {
-    auto &vp = pInfo->Viewport;
-    auto &clear = pInfo->ClearColor.Value;
+    // auto &vp = pInfo->Viewport;
+    // auto &clear = pInfo->ClearColor.Value;
 
-    auto camera = m_impl->GetOrCreateCamera(pInfo->CameraID, vp.z, vp.w);
+    auto camera = m_impl->GetOrCreateCamera(pInfo->UserDataAsUInt(),
+                                            pInfo->viewportWidth, pInfo->viewportHeight);
     camera->Bind();
 
     //
     // rendertarget
     //
-    glViewport(vp.x, vp.y, vp.z, vp.w);
-    glClearColor(clear.x, clear.y, clear.z, clear.w);
-    glClearDepthf(pInfo->ClearDepth);
+    glViewport(0, 0, pInfo->viewportWidth, pInfo->viewportHeight);
+    glClearColor(pInfo->clearColor[0], pInfo->clearColor[1], pInfo->clearColor[2], pInfo->clearColor[3]);
+    glClearDepthf(pInfo->clearDepth);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //
@@ -307,15 +309,15 @@ void GLES3Renderer::Begin(const agv::scene::RenderTargetInfo *pInfo, agv::scene:
     }
 }
 
-void *GLES3Renderer::End(const agv::scene::RenderTargetInfo *pInfo)
+void *GLES3Renderer::End(const camera::CameraState *pInfo)
 {
-    auto &vp = pInfo->Viewport;
-    auto camera = m_impl->GetOrCreateCamera(pInfo->CameraID, vp.z, vp.w);
+    auto camera = m_impl->GetOrCreateCamera(pInfo->UserDataAsUInt(),
+                                            pInfo->viewportWidth, pInfo->viewportHeight);
     camera->Unbind();
     return (void *)(int64_t)camera->GetTexture()->GetGLValue();
 }
 
-void GLES3Renderer::DrawModel(const agv::scene::RenderTargetInfo *pInfo,
+void GLES3Renderer::DrawModel(const camera::CameraState *pInfo,
                               const agv::scene::Model *pModel)
 {
     for (auto &node : pModel->Nodes)
