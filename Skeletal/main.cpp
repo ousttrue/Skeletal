@@ -5,44 +5,8 @@
 #include <gui.h>
 #include <plog/Log.h>
 
-///
-/// const
-///
 const auto WINDOW_NAME = L"Skeletal";
 
-///
-/// shader
-///
-const std::string g_gizmo_vs =
-#include "../shaders/gizmo.vs"
-    ;
-const std::string g_gizmo_fs =
-#include "../shaders/gizmo.fs"
-    ;
-const std::string g_unlit_vs =
-#include "../shaders/unlit.vs"
-    ;
-const std::string g_unlit_fs =
-#include "../shaders/unlit.fs"
-    ;
-
-std::string trim(const std::string &src)
-{
-    auto it = src.begin();
-    for (; it != src.end(); ++it)
-    {
-        if (!isspace(*it))
-        {
-            break;
-        }
-    }
-    return std::string(it, src.end());
-}
-
-
-///
-/// static functions
-///
 static std::wstring SjisToUnicode(const std::string &src)
 {
     auto size = MultiByteToWideChar(CP_OEMCP, 0, src.c_str(), -1, NULL, 0);
@@ -89,14 +53,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
 
     agv::renderer::GLES3Renderer renderer;
-    agv::renderer::ShaderSourceManager::Instance.SetSource(
-        agv::scene::ShaderType::gizmo,
-        trim(g_gizmo_vs),
-        trim(g_gizmo_fs));
-    agv::renderer::ShaderSourceManager::Instance.SetSource(
-        agv::scene::ShaderType::unlit,
-        trim(g_unlit_vs),
-        trim(g_unlit_fs));
 
     float lastTime = 0;
     while (window.IsRunning())
