@@ -73,7 +73,7 @@ struct CameraState
         return (uint32_t)(uint64_t)userData;
     }
 
-    std::array<float, 4> clearColor = {0, 0.2f, 0.4f, 0};
+    std::array<float, 4> clearColor = {0, 0.2f, 0.4f, 1.0f};
     float clearDepth = 1.0f;
 
     // projection

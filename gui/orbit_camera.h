@@ -9,7 +9,7 @@ struct OrbitCamera
     camera::CameraState state;
 
     float zNear = 0.1f;
-    float zFar = 10.0f;
+    float zFar = 100.0f;
     float aspectRatio = 1.0f;
 
     int prevMouseX = -1;

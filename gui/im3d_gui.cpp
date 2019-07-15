@@ -1,9 +1,12 @@
 #include "im3d_gui.h"
 #include <im3d.h>
 #include <im3d_math.h>
+#include <plog/Log.h>
+
 // #include <GL/glew.h>
 #define GL_GLEXT_PROTOTYPES
 #include <GLES3/gl3.h>
+
 #include "camera_state.h"
 #include "window_state.h"
 
@@ -28,7 +31,20 @@ const std::string g_triangles_fs =
 #include "../shaders/im3d_triangles.fs"
     ;
 
-static GLuint CompileShader(GLenum stage, const std::string &src)
+static std::string trim(const std::string &src)
+{
+    auto it = src.begin();
+    for (; it != src.end(); ++it)
+    {
+        if (!isspace(*it))
+        {
+            break;
+        }
+    }
+    return std::string(it, src.end());
+}
+
+static GLuint CompileShader(const std::string &name, GLenum stage, const std::string &src)
 {
     auto shader = glCreateShader(stage);
     auto data = static_cast<const GLchar *>(src.data());
@@ -40,16 +56,12 @@ static GLuint CompileShader(GLenum stage, const std::string &src)
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
     if (compileStatus == GL_FALSE)
     {
-        // fprintf(stderr, "Error compiling '%s':\n\n", _path);
         GLint len;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
-        char *log = new GLchar[len];
-        glGetShaderInfoLog(shader, len, 0, log);
-        fprintf(stderr, log);
-        delete[] log;
-
-        //fprintf(stderr, "\n\n%s", src.data());
-        fprintf(stderr, "\n");
+        std::string log;
+        log.resize(len);
+        glGetShaderInfoLog(shader, len, 0, log.data());
+        LOGE << name << ": " << log;
         glDeleteShader(shader);
         return 0;
     }
@@ -77,14 +89,14 @@ static bool LinkShaderProgram(GLuint _handle)
     return true;
 }
 
-unsigned int CreateShader(const std::string &vsSrc, const std::string &fsSrc)
+unsigned int CreateShader(const std::string &name, const std::string &vsSrc, const std::string &fsSrc)
 {
-    auto vs = CompileShader(GL_VERTEX_SHADER, vsSrc);
+    auto vs = CompileShader(name + "@vs", GL_VERTEX_SHADER, trim(vsSrc));
     if (!vs)
     {
         return 0;
     }
-    auto fs = CompileShader(GL_FRAGMENT_SHADER, fsSrc);
+    auto fs = CompileShader(name + "@fs", GL_FRAGMENT_SHADER, trim(fsSrc));
     if (!fs)
     {
         return 0;
@@ -117,18 +129,25 @@ public:
     {
         static_assert(sizeof(Im3d::VertexData) % 16 == 0);
 
+        // glGetv
+        //     
+
+        GLint value;
+        glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &value);
+        LOGI << "GL_MAX_UNIFORM_BLOCK_SIZE: " << value;
+
         {
-            g_Im3dShaderPoints = CreateShader(g_points_vs, g_points_fs);
+            g_Im3dShaderPoints = CreateShader("im3d_point", g_points_vs, g_points_fs);
             auto blockIndex = glGetUniformBlockIndex(g_Im3dShaderPoints, "VertexDataBlock");
             glUniformBlockBinding(g_Im3dShaderPoints, blockIndex, 0);
         }
         {
-            g_Im3dShaderLines = CreateShader(g_lines_vs, g_lines_fs);
+            g_Im3dShaderLines = CreateShader("im3d_line", g_lines_vs, g_lines_fs);
             auto blockIndex = glGetUniformBlockIndex(g_Im3dShaderLines, "VertexDataBlock");
             glUniformBlockBinding(g_Im3dShaderLines, blockIndex, 0);
         }
         {
-            g_Im3dShaderTriangles = CreateShader(g_triangles_vs, g_triangles_fs);
+            g_Im3dShaderTriangles = CreateShader("im3d_triangle", g_triangles_vs, g_triangles_fs);
             auto blockIndex = glGetUniformBlockIndex(g_Im3dShaderTriangles, "VertexDataBlock");
             glUniformBlockBinding(g_Im3dShaderTriangles, blockIndex, 0);
         }
@@ -211,8 +230,10 @@ public:
 
             glUseProgram(sh);
             auto &ad = Im3d::GetAppData();
-            glUniform2f(glGetUniformLocation(sh, "uViewport"), ad.m_viewportSize.x, ad.m_viewportSize.y);
-            glUniformMatrix4fv(glGetUniformLocation(sh, "uViewProjMatrix"), 1, false, viewProj);
+            auto loc = glGetUniformLocation(sh, "uViewport");
+            glUniform2f(loc, ad.m_viewportSize.x, ad.m_viewportSize.y);
+            loc = glGetUniformLocation(sh, "uViewProjMatrix");
+            glUniformMatrix4fv(loc, 1, false, viewProj);
 
             // Uniform buffers have a size limit; split the vertex data into several passes.
             const int kMaxBufferSize = 64 * 1024; // assuming 64kb here but the application should check the implementation limit
@@ -236,11 +257,14 @@ public:
                 remainingPrimCount -= passPrimCount;
             }
         }
+
+        glBindVertexArray(0);
+        glUseProgram(0);
+        glDisable(GL_BLEND);
     }
 };
 
 Im3dGui::Im3dGui()
-    : m_impl(new Im3dGuiImpl)
 {
 }
 
@@ -249,12 +273,23 @@ Im3dGui::~Im3dGui()
     delete m_impl;
 }
 
+bool Im3dGui::Initialize()
+{
+    if (m_impl)
+    {
+        return false;
+    }
+
+    m_impl = new Im3dGuiImpl;
+    return true;
+}
+
 void Im3dGui::NewFrame(const camera::CameraState *c, const MouseState *mouse, float deltaTime)
 {
     auto &ad = Im3d::GetAppData();
 
     ad.m_deltaTime = deltaTime;
-    ad.m_viewportSize = Im3d::Vec2(c->viewportWidth, c->viewportHeight);
+    ad.m_viewportSize = Im3d::Vec2((float)c->viewportWidth, (float)c->viewportHeight);
 
     auto &inv = c->viewInverse;
     ad.m_viewOrigin = Im3d::Vec3(inv[12], inv[13], inv[14]); // for VR use the head position

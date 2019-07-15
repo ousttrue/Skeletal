@@ -19,7 +19,7 @@ const std::string g_unlit_fs =
 #include "../shaders/unlit.fs"
     ;
 
-std::string trim(const std::string &src)
+static std::string trim(const std::string &src)
 {
     auto it = src.begin();
     for (; it != src.end(); ++it)

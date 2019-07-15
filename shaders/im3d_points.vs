@@ -1,5 +1,5 @@
 R""(
-#version 140
+#version 300 es
 #define kAntialiasing 2.0
 
 /*	This vertex shader fetches Im3d vertex data manually from a uniform buffer (uVertexData). It assumes that the bound vertex buffer contains 4 vertices as follows:
@@ -34,8 +34,8 @@ uniform vec2 uViewport;
 
 in vec4 aPosition;
 
-noperspective out vec2 vUv;
-noperspective out float vSize;
+/*noperspective*/ out vec2 vUv;
+/*noperspective*/ out float vSize;
 smooth out vec4 vColor;
 
 vec4 UintToRgba(uint _u)

@@ -182,6 +182,8 @@ public:
         ImGui_ImplWin32_Init(hWnd);
 
         plog::init(plog::verbose, &m_appender);
+
+        m_im3d.Initialize();
     }
 
     ~GUIImpl()
@@ -228,25 +230,28 @@ public:
             mouse.Y = (int)mousePos.y;
             m_camera.MouseInput(mouse);
 
+            //
+            // draw
+            //
+            auto firstSelection = scene->m_selection.begin();
+            // if (firstSelection != scene->m_selection.end())
+            // {
+            //     auto selection = firstSelection->second;
+            //     // gizmo manipulate(not draw)
+            //     m_im3d.NewFrame(&m_camera.state, &mouse, deltaSeconds);
+            //     auto model = selection->GetWorldMatrix().array();
+            //     m_im3d.Manipulate(model.data());
+            //     selection->SetWorldMatrix(model);
+            // }
+
             // render and get rendertarget
             m_renderer.Begin(&m_camera.state, scene);
 
-            auto firstSelection = scene->m_selection.begin();
-            if (m_openView && firstSelection != scene->m_selection.end())
-            {
-                auto selection = firstSelection->second;
-                // gizmo
-                // auto &info = scene->GetCamera()->GetRenderTargetInfo();
-                {
-                    // m_im3d.NewFrame();
-
-                    auto model = selection->GetWorldMatrix();
-                    // auto mvp = info.CalcModelViewProjection(model.array());
-                    // g_guizmo.ShowGuizmo(m_hWnd, ImVec2(0, 0), size, info.Projection, info.View, &model);
-
-                    selection->SetWorldMatrix(model);
-                }
-            }
+            // if (firstSelection != scene->m_selection.end())
+            // {
+            //     // gizmo draw
+            //     m_im3d.Draw(m_camera.state.viewProjection.data());
+            // }
 
             auto result = m_renderer.End(&m_camera.state);
 

@@ -1,6 +1,6 @@
 R""(
 #version 300 es
-precision mediump float;                   
+precision mediump float;
 in vec3 f_Color;
 out vec4 out_Color;
 void main()                                
