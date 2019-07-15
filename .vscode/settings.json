@@ -34,12 +34,15 @@
         "XMINT",
         "XMMATRIX",
         "XMVECTOR",
+        "centrarl",
         "imgui",
         "nlohmann",
         "plog",
         "simplegltf",
         "stbi",
-        "vcpkg"
+        "undocked",
+        "vcpkg",
+        "wigets"
     ],
     "files.associations": {
         "deque": "cpp",

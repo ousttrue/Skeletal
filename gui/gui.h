@@ -26,7 +26,6 @@ public:
     ~GUI();
 
     void Draw(const WindowState *state, float deltaSeconds,
-               agv::renderer::GLES3Renderer *renderer,
                agv::scene::Scene *scene);
 };
 

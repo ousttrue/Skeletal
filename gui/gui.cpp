@@ -274,12 +274,13 @@ class GUIImpl
     void *m_hWnd = nullptr;
     bool m_openView = true;
 
-    GuiState guiState;
-    plog::ImGuiAppender<plog::TxtFormatter> appender;
+    GuiState m_guiState;
+    plog::ImGuiAppender<plog::TxtFormatter> m_appender;
+    agv::renderer::GLES3Renderer m_renderer;
 
 public:
     GUIImpl(void *hWnd)
-        : m_hWnd(hWnd), appender(&guiState.logger)
+        : m_hWnd(hWnd), m_appender(&m_guiState.logger)
     {
         ImGui::CreateContext();
         ImGuiIO &io = ImGui::GetIO();
@@ -293,7 +294,7 @@ public:
         ImGui_ImplOpenGL3_Init(glsl_version);
         ImGui_ImplWin32_Init(hWnd);
 
-        plog::init(plog::verbose, &appender);
+        plog::init(plog::verbose, &m_appender);
     }
 
     ~GUIImpl()
@@ -302,7 +303,7 @@ public:
         ImGui::DestroyContext();
     }
 
-    void Begin(const WindowState *state, float deltaSeconds, renderer::GLES3Renderer *renderer, scene::Scene *scene)
+    void Begin(const WindowState *state, float deltaSeconds, scene::Scene *scene)
     {
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -363,7 +364,7 @@ public:
                                                 static_cast<int>(size.y)));
 
             // render and get rendertarget
-            renderer->Begin(&info, scene);
+            m_renderer.Begin(&info, scene);
 
             auto firstSelection = scene->m_selection.begin();
             if (m_openView && firstSelection != scene->m_selection.end())
@@ -379,7 +380,7 @@ public:
                 }
             }
 
-            auto result = renderer->End(&info);
+            auto result = m_renderer.End(&info);
 
             // show render target
             ImGui::Image(result, size);
@@ -409,7 +410,7 @@ public:
             ImGui::End();
         }
 
-        guiState.Update(scene, renderer);
+        m_guiState.Update(scene, &m_renderer);
     }
 
     void End()
@@ -431,13 +432,13 @@ GUI::~GUI()
     }
 }
 
-void GUI::Draw(const WindowState *state, float deltaSeconds, agv::renderer::GLES3Renderer *renderer, agv::scene::Scene *scene)
+void GUI::Draw(const WindowState *state, float deltaSeconds, agv::scene::Scene *scene)
 {
     if (!m_impl)
     {
         m_impl = new GUIImpl(state->Handle);
     }
-    m_impl->Begin(state, deltaSeconds, renderer, scene);
+    m_impl->Begin(state, deltaSeconds, scene);
     m_impl->End();
 }
 } // namespace gui

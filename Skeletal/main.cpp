@@ -1,6 +1,5 @@
 #include "eglapp.h"
 #include "win32_window.h"
-#include <gles3renderer.h>
 #include <scene.h>
 #include <gui.h>
 #include <plog/Log.h>
@@ -52,8 +51,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         scene.Load(SjisToUnicode(__argv[1]));
     }
 
-    agv::renderer::GLES3Renderer renderer;
-
     float lastTime = 0;
     while (window.IsRunning())
     {
@@ -66,7 +63,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         auto state = window.GetState();
 
         // rendering
-        gui.Draw(&state, delta, &renderer, &scene);
+        gui.Draw(&state, delta, &scene);
         app.present();
     }
 
