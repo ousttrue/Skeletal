@@ -1,5 +1,6 @@
-#include <Windows.h>
+#pragma once
 
+struct WindowState;
 namespace agv
 {
 
@@ -15,31 +16,16 @@ class Scene;
 
 namespace gui
 {
+class GUIImpl;
 class GUI
 {
-    bool m_initialized = false;
-    bool m_openView = true;
+    GUIImpl *m_impl = nullptr;
 
 public:
     GUI();
     ~GUI();
 
-    void MouseMove(int x, int y);
-    void MouseLeftDown();
-    void MouseLeftUp();
-    void MouseMiddleDown();
-    void MouseMiddleUp();
-    void MouseRightDown();
-    void MouseRightUp();
-    void MouseWheel(int d);
-
-    bool HasMouseCapture();
-    bool HasFocus();
-    bool IsHover();
-
-    void SetScreenSize(int w, int h);
-
-    void Begin(HWND hWnd, float deltaSeconds,
+    void Begin(const WindowState *state, float deltaSeconds,
                agv::renderer::GLES3Renderer *renderer,
                agv::scene::Scene *scene);
     void End();

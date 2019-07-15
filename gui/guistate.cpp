@@ -2,10 +2,9 @@
 #include <scene.h>
 #include <gles3renderer.h>
 #include <imgui.h>
-#include <imgui_widgets.cpp>
+// #include <imgui_widgets.cpp>
 #include <memory>
 #include <Windows.h>
-#include "addon.h"
 
 static std::wstring OpenDialog()
 {
@@ -254,6 +253,4 @@ void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *re
         ImGui::EndChild();
     }
     ImGui::End();
-
-    AddOn();
 }

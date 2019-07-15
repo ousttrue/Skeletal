@@ -1,4 +1,5 @@
 #include "gui.h"
+#include "window_state.h"
 #include <imgui.h>
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_win32.h>
@@ -9,226 +10,6 @@
 #include <imgui_internal.h>
 
 const char *glsl_version = "#version 300 es";
-
-class Guizmo
-{
-    ImGuizmo::OPERATION mCurrentGizmoOperation = ImGuizmo::ROTATE;
-    ImGuizmo::MODE mCurrentGizmoMode = ImGuizmo::LOCAL;
-    bool useSnap = false;
-    DirectX::XMFLOAT3 snap = {0, 0, 0};
-
-    ImGuiContext *m_context = nullptr;
-
-public:
-    Guizmo()
-    {
-    }
-
-    ~Guizmo()
-    {
-    }
-
-    void ShowGui(dxm::Matrix *pM)
-    {
-        if (ImGui::IsKeyPressed(90))
-            mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-        if (ImGui::IsKeyPressed(69))
-            mCurrentGizmoOperation = ImGuizmo::ROTATE;
-        if (ImGui::IsKeyPressed(82)) // r Key
-            mCurrentGizmoOperation = ImGuizmo::SCALE;
-        if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
-            mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-
-        ImGui::SameLine();
-        if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
-            mCurrentGizmoOperation = ImGuizmo::ROTATE;
-        ImGui::SameLine();
-        if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
-            mCurrentGizmoOperation = ImGuizmo::SCALE;
-        float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-        ImGuizmo::DecomposeMatrixToComponents(pM->data(), matrixTranslation, matrixRotation, matrixScale);
-        ImGui::InputFloat3("Tr", matrixTranslation, 3);
-        ImGui::InputFloat3("Rt", matrixRotation, 3);
-        ImGui::InputFloat3("Sc", matrixScale, 3);
-        ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, pM->data());
-        if (mCurrentGizmoOperation != ImGuizmo::SCALE)
-        {
-            if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
-                mCurrentGizmoMode = ImGuizmo::LOCAL;
-            ImGui::SameLine();
-            if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
-                mCurrentGizmoMode = ImGuizmo::WORLD;
-        }
-        if (ImGui::IsKeyPressed(83))
-            useSnap = !useSnap;
-        ImGui::Checkbox("", &useSnap);
-        ImGui::SameLine();
-        switch (mCurrentGizmoOperation)
-        {
-        case ImGuizmo::TRANSLATE:
-            // snap = config.mSnapTranslation;
-            ImGui::InputFloat3("Snap", &snap.x);
-            break;
-        case ImGuizmo::ROTATE:
-            // snap = config.mSnapRotation;
-            ImGui::InputFloat("Angle Snap", &snap.x);
-            break;
-        case ImGuizmo::SCALE:
-            // snap = config.mSnapScale;
-            ImGui::InputFloat("Scale Snap", &snap.x);
-            break;
-        }
-    }
-
-    void ShowGuizmo(HWND hWnd,
-                    const ImVec2 &pos, const ImVec2 &size,
-                    const dxm::Matrix &projection,
-                    const dxm::Matrix &view,
-                    dxm::Matrix *pM)
-    {
-        #if 1
-        auto backup = ImGui::GetCurrentContext();
-        {
-            if (!m_context)
-            {
-                m_context = ImGui::CreateContext();
-                ImGui::SetCurrentContext(m_context);
-                ImGui_ImplOpenGL3_Init(glsl_version);
-
-                // copy font
-                m_context->IO.Fonts = backup->IO.Fonts;
-
-                ImGui_ImplWin32_Init(hWnd);
-            }
-            ImGui::SetCurrentContext(m_context);
-
-            // Start the Dear ImGui frame
-            // ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplWin32_NewFrame();
-            ImGui::NewFrame();
-            {
-                #endif
-
-                ImGuizmo::BeginFrame();
-                ImGuizmo::SetRect(pos.x, pos.y, size.x, size.y);
-                auto m = dxm::Matrix::Identity;
-                ImGuizmo::DrawGrid(view.data(), projection.data(), m.data(), 5);
-                ImGuizmo::Manipulate(view.data(), projection.data(),
-                                     mCurrentGizmoOperation, mCurrentGizmoMode, pM->data(), NULL,
-                                     useSnap ? &snap.x : NULL);
-
-                #if 1
-            }
-            ImGui::EndFrame();
-            ImGui::Render();
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        }
-        ImGui::SetCurrentContext(backup);
-        #endif
-    }
-};
-Guizmo g_guizmo;
-
-namespace agv
-{
-namespace gui
-{
-GUI::GUI()
-{
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors; // We can honor GetMouseCursor() values (optional)
-    io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;  // We can honor io.WantSetMousePos requests (optional, rarely used)
-}
-
-GUI::~GUI()
-{
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui::DestroyContext();
-}
-
-void GUI::MouseMove(int x, int y)
-{
-    ImGuiIO &io = ImGui::GetIO();
-    // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
-    io.MousePos = ImVec2(static_cast<float>(x), static_cast<float>(y));
-}
-
-void GUI::MouseLeftDown()
-{
-    ImGuiIO &io = ImGui::GetIO();
-    io.MouseDown[0] = true;
-}
-
-void GUI::MouseLeftUp()
-{
-    ImGuiIO &io = ImGui::GetIO();
-    io.MouseDown[0] = false;
-}
-
-void GUI::MouseMiddleDown()
-{
-    ImGuiIO &io = ImGui::GetIO();
-    io.MouseDown[2] = true;
-}
-
-void GUI::MouseMiddleUp()
-{
-    ImGuiIO &io = ImGui::GetIO();
-    io.MouseDown[2] = false;
-}
-
-void GUI::MouseRightDown()
-{
-    ImGuiIO &io = ImGui::GetIO();
-    io.MouseDown[1] = true;
-}
-
-void GUI::MouseRightUp()
-{
-    ImGuiIO &io = ImGui::GetIO();
-    io.MouseDown[1] = false;
-}
-
-void GUI::MouseWheel(int d)
-{
-    ImGuiIO &io = ImGui::GetIO();
-    if (d < 0)
-    {
-        io.MouseWheel -= 1;
-    }
-    else if (d > 0)
-    {
-        io.MouseWheel += 1;
-    }
-}
-
-bool GUI::HasMouseCapture()
-{
-    ImGuiIO &io = ImGui::GetIO();
-    return io.WantCaptureMouse;
-}
-
-bool GUI::HasFocus()
-{
-    ImGuiIO &io = ImGui::GetIO();
-    return io.WantCaptureKeyboard;
-}
-
-bool GUI::IsHover()
-{
-    ImGuiIO &io = ImGui::GetIO();
-    return ImGui::IsAnyWindowHovered() || io.WantCaptureMouse || io.WantCaptureKeyboard;
-}
-
-void GUI::SetScreenSize(int w, int h)
-{
-    ImGuiIO &io = ImGui::GetIO();
-    io.DisplaySize = ImVec2((float)w, (float)h);
-}
 
 // Demonstrate using DockSpace() to create an explicit docking node within an existing window.
 // Note that you already dock windows into each others _without_ a DockSpace() by just moving windows
@@ -334,74 +115,247 @@ static void Dockspace()
 
     ImGui::End();
 }
-
-void GUI::Begin(HWND hWnd, float deltaSeconds, agv::renderer::GLES3Renderer *renderer, agv::scene::Scene *scene)
+class Guizmo
 {
-    if (!m_initialized)
+    ImGuizmo::OPERATION mCurrentGizmoOperation = ImGuizmo::ROTATE;
+    ImGuizmo::MODE mCurrentGizmoMode = ImGuizmo::LOCAL;
+    bool useSnap = false;
+    DirectX::XMFLOAT3 snap = {0, 0, 0};
+
+    ImGuiContext *m_context = nullptr;
+
+public:
+    Guizmo()
     {
-        //ImGui_ImplOpenGL3_CreateFontsTexture();
-
-        ImGui_ImplOpenGL3_Init(glsl_version);
-        ImGui_ImplWin32_Init(hWnd);
-
-        m_initialized = true;
     }
 
-    // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-
-    ImGuiIO &io = ImGui::GetIO();
-    IM_ASSERT(io.Fonts->IsBuilt());
-    io.DeltaTime = deltaSeconds > 0 ? deltaSeconds : 0.001f;
-
-    ImGui::NewFrame();
-
-    // widgets...
-    Dockspace();
-
-    ImVec2 pos;
-    ImVec2 size;
-    auto camera = scene->GetCamera();
-    auto &info = camera->GetRenderTargetInfo();
-
-    // render centrarl wigets
-    if (ImGui::Begin("3DView", &m_openView,
-                     ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+    ~Guizmo()
     {
-        // transfer MouseEvents
-        auto &io = ImGui::GetIO();
-        auto mouse = scene->GetMouseObserver();
-        auto mousePos = ImGui::GetMousePos();
-        mouse->MouseMove(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
-        if (io.MouseDown[1])
-        {
-            mouse->MouseRightDown();
-        }
-        if (io.MouseReleased[1])
-        {
-            mouse->MouseRightUp();
-        }
-        if (io.MouseDown[2])
-        {
-            mouse->MouseMiddleDown();
-        }
-        if (io.MouseReleased[2])
-        {
-            mouse->MouseMiddleUp();
-        }
-        mouse->MouseWheel(static_cast<int>(io.MouseWheel));
+    }
 
-        // resize rendertarget
-        pos = ImGui::GetWindowPos();
-        size = ImGui::GetWindowSize();
-        // size.y -= 40; // title bar ?
-        camera->SetViewPort(DirectX::XMINT4(0, 0,
-                                            static_cast<int>(size.x),
-                                            static_cast<int>(size.y)));
+    void ShowGui(dxm::Matrix *pM)
+    {
+        if (ImGui::IsKeyPressed(90))
+            mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+        if (ImGui::IsKeyPressed(69))
+            mCurrentGizmoOperation = ImGuizmo::ROTATE;
+        if (ImGui::IsKeyPressed(82)) // r Key
+            mCurrentGizmoOperation = ImGuizmo::SCALE;
+        if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+            mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
 
-        // render and get rendertarget
-        renderer->Begin(&info, scene);
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+            mCurrentGizmoOperation = ImGuizmo::ROTATE;
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+            mCurrentGizmoOperation = ImGuizmo::SCALE;
+        float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+        ImGuizmo::DecomposeMatrixToComponents(pM->data(), matrixTranslation, matrixRotation, matrixScale);
+        ImGui::InputFloat3("Tr", matrixTranslation, 3);
+        ImGui::InputFloat3("Rt", matrixRotation, 3);
+        ImGui::InputFloat3("Sc", matrixScale, 3);
+        ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, pM->data());
+        if (mCurrentGizmoOperation != ImGuizmo::SCALE)
+        {
+            if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
+                mCurrentGizmoMode = ImGuizmo::LOCAL;
+            ImGui::SameLine();
+            if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
+                mCurrentGizmoMode = ImGuizmo::WORLD;
+        }
+        if (ImGui::IsKeyPressed(83))
+            useSnap = !useSnap;
+        ImGui::Checkbox("", &useSnap);
+        ImGui::SameLine();
+        switch (mCurrentGizmoOperation)
+        {
+        case ImGuizmo::TRANSLATE:
+            // snap = config.mSnapTranslation;
+            ImGui::InputFloat3("Snap", &snap.x);
+            break;
+        case ImGuizmo::ROTATE:
+            // snap = config.mSnapRotation;
+            ImGui::InputFloat("Angle Snap", &snap.x);
+            break;
+        case ImGuizmo::SCALE:
+            // snap = config.mSnapScale;
+            ImGui::InputFloat("Scale Snap", &snap.x);
+            break;
+        }
+    }
+
+    void ShowGuizmo(void *hWnd,
+                    const ImVec2 &pos, const ImVec2 &size,
+                    const dxm::Matrix &projection,
+                    const dxm::Matrix &view,
+                    dxm::Matrix *pM)
+    {
+#if 1
+        auto backup = ImGui::GetCurrentContext();
+        {
+            if (!m_context)
+            {
+                m_context = ImGui::CreateContext();
+                ImGui::SetCurrentContext(m_context);
+                ImGui_ImplOpenGL3_Init(glsl_version);
+
+                // copy font
+                m_context->IO.Fonts = backup->IO.Fonts;
+
+                ImGui_ImplWin32_Init(hWnd);
+            }
+            ImGui::SetCurrentContext(m_context);
+
+            // Start the Dear ImGui frame
+            // ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplWin32_NewFrame();
+            ImGui::NewFrame();
+            {
+#endif
+
+                ImGuizmo::BeginFrame();
+                ImGuizmo::SetRect(pos.x, pos.y, size.x, size.y);
+                auto m = dxm::Matrix::Identity;
+                ImGuizmo::DrawGrid(view.data(), projection.data(), m.data(), 5);
+                ImGuizmo::Manipulate(view.data(), projection.data(),
+                                     mCurrentGizmoOperation, mCurrentGizmoMode, pM->data(), NULL,
+                                     useSnap ? &snap.x : NULL);
+
+#if 1
+            }
+            ImGui::EndFrame();
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        }
+        ImGui::SetCurrentContext(backup);
+#endif
+    }
+};
+Guizmo g_guizmo;
+
+namespace agv
+{
+namespace gui
+{
+class GUIImpl
+{
+    void *m_hWnd = nullptr;
+    bool m_openView = true;
+
+public:
+    GUIImpl(void *hWnd)
+        : m_hWnd(hWnd)
+    {
+        ImGui::CreateContext();
+        ImGuiIO &io = ImGui::GetIO();
+        // (void)io;
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors; // We can honor GetMouseCursor() values (optional)
+        io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;  // We can honor io.WantSetMousePos requests (optional, rarely used)
+
+        //ImGui_ImplOpenGL3_CreateFontsTexture();
+        ImGui_ImplOpenGL3_Init(glsl_version);
+        ImGui_ImplWin32_Init(hWnd);
+    }
+
+    ~GUIImpl()
+    {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui::DestroyContext();
+    }
+
+    void Begin(const WindowState *state, float deltaSeconds, renderer::GLES3Renderer *renderer, scene::Scene *scene)
+    {
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+
+        ImGuiIO &io = ImGui::GetIO();
+        IM_ASSERT(io.Fonts->IsBuilt());
+        io.DeltaTime = deltaSeconds > 0 ? deltaSeconds : 0.001f;
+
+        io.MouseDown[0] = state->Mouse.IsDown(ButtonFlags::Left);
+        io.MouseDown[1] = state->Mouse.IsDown(ButtonFlags::Right);
+        io.MouseDown[2] = state->Mouse.IsDown(ButtonFlags::Middle);
+        io.MouseWheel = static_cast<float>(state->Mouse.Wheel);
+
+        ImGui::NewFrame();
+
+        // widgets...
+        Dockspace();
+
+        ImVec2 pos;
+        ImVec2 size;
+        auto camera = scene->GetCamera();
+        auto &info = camera->GetRenderTargetInfo();
+
+        // render centrarl wigets
+        if (ImGui::Begin("3DView", &m_openView,
+                         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+        {
+            // transfer MouseEvents
+            auto &io = ImGui::GetIO();
+            auto mouse = scene->GetMouseObserver();
+            auto mousePos = ImGui::GetMousePos();
+            mouse->MouseMove(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y));
+            if (io.MouseDown[1])
+            {
+                mouse->MouseRightDown();
+            }
+            if (io.MouseReleased[1])
+            {
+                mouse->MouseRightUp();
+            }
+            if (io.MouseDown[2])
+            {
+                mouse->MouseMiddleDown();
+            }
+            if (io.MouseReleased[2])
+            {
+                mouse->MouseMiddleUp();
+            }
+            mouse->MouseWheel(static_cast<int>(io.MouseWheel));
+
+            // resize rendertarget
+            pos = ImGui::GetWindowPos();
+            size = ImGui::GetWindowSize();
+            // size.y -= 40; // title bar ?
+            camera->SetViewPort(DirectX::XMINT4(0, 0,
+                                                static_cast<int>(size.x),
+                                                static_cast<int>(size.y)));
+
+            // render and get rendertarget
+            renderer->Begin(&info, scene);
+
+            auto firstSelection = scene->m_selection.begin();
+            if (m_openView && firstSelection != scene->m_selection.end())
+            {
+                auto selection = firstSelection->second;
+                // gizmo
+                // auto &info = scene->GetCamera()->GetRenderTargetInfo();
+                {
+                    auto model = selection->GetWorldMatrix();
+                    info.CalcMvp(model);
+                    g_guizmo.ShowGuizmo(m_hWnd, ImVec2(0, 0), size, info.Projection, info.View, &model);
+                    selection->SetWorldMatrix(model);
+                }
+            }
+
+            auto result = renderer->End(&info);
+
+            // show render target
+            ImGui::Image(result, size);
+
+            {
+                auto cy = pos.y + size.y * 0.5f;
+                auto &buf = ImGui::GetWindowDrawList()->VtxBuffer;
+                for (int i = 0; i < buf.Size; i++)
+                    buf[i].pos.y += (cy - buf[i].pos.y) * 2;
+            }
+        }
+        ImGui::End();
 
         auto firstSelection = scene->m_selection.begin();
         if (m_openView && firstSelection != scene->m_selection.end())
@@ -409,49 +363,48 @@ void GUI::Begin(HWND hWnd, float deltaSeconds, agv::renderer::GLES3Renderer *ren
             auto selection = firstSelection->second;
             // gizmo
             // auto &info = scene->GetCamera()->GetRenderTargetInfo();
+            ImGuizmo::BeginFrame();
+            if (ImGui::Begin("selected"))
             {
                 auto model = selection->GetWorldMatrix();
-                info.CalcMvp(model);
-                g_guizmo.ShowGuizmo(hWnd, ImVec2(0, 0), size, info.Projection, info.View, &model);
+                g_guizmo.ShowGui(&model);
                 selection->SetWorldMatrix(model);
             }
-        }
-
-        auto result = renderer->End(&info);
-
-        // show render target
-        ImGui::Image(result, size);
-
-        {
-            auto cy = pos.y + size.y * 0.5f;
-            auto &buf = ImGui::GetWindowDrawList()->VtxBuffer;
-            for (int i = 0; i < buf.Size; i++)
-                buf[i].pos.y += (cy - buf[i].pos.y) * 2;
+            ImGui::End();
         }
     }
-    ImGui::End();
 
-    auto firstSelection = scene->m_selection.begin();
-    if (m_openView && firstSelection != scene->m_selection.end())
+    void End()
     {
-        auto selection = firstSelection->second;
-        // gizmo
-        // auto &info = scene->GetCamera()->GetRenderTargetInfo();
-        ImGuizmo::BeginFrame();
-        if (ImGui::Begin("selected"))
-        {
-            auto model = selection->GetWorldMatrix();
-            g_guizmo.ShowGui(&model);
-            selection->SetWorldMatrix(model);
-        }
-        ImGui::End();
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
+};
+
+GUI::GUI()
+{
+}
+
+GUI::~GUI()
+{
+    if (m_impl)
+    {
+        delete m_impl;
+    }
+}
+
+void GUI::Begin(const WindowState *state, float deltaSeconds, agv::renderer::GLES3Renderer *renderer, agv::scene::Scene *scene)
+{
+    if (!m_impl)
+    {
+        m_impl = new GUIImpl(state->Handle);
+    }
+    m_impl->Begin(state, deltaSeconds, renderer, scene);
 }
 
 void GUI::End()
 {
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    m_impl->End();
 }
 } // namespace gui
 } // namespace agv

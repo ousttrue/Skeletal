@@ -112,7 +112,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     {
         return 1;
     }
-    auto hwnd = (HWND)window.GetHandle();
+    auto hwnd = (HWND)window.GetState().Handle;
     LOGD << "CreateWindow";
 
     EglApp app(hwnd);
@@ -146,11 +146,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         auto now = window.GetTimeSeconds();
         auto delta = now - lastTime;
         lastTime = now;
-
         scene.Update(now);
 
+        auto state = window.GetState();
+
         // rendering
-        gui.Begin(hwnd, delta, &renderer, &scene);
+        gui.Begin(&state, delta, &renderer, &scene);
         guiState.Update(&scene, &renderer);
         gui.End();
         app.present();
