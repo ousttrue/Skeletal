@@ -13,6 +13,7 @@
         "LBUTTONDOWN",
         "LBUTTONUP",
         "LOGD",
+        "LOGI",
         "LPARAM",
         "LPSTR",
         "LRESULT",
@@ -23,6 +24,7 @@
         "MBUTTONUP",
         "NOREMOVE",
         "OEMCP",
+        "OWNDC",
         "PAINTSTRUCT",
         "Programiv",
         "RBUTTONDOWN",
@@ -32,6 +34,7 @@
         "XMINT",
         "XMMATRIX",
         "XMVECTOR",
+        "imgui",
         "nlohmann",
         "plog",
         "simplegltf",
@@ -51,4 +54,5 @@
         "utility": "cpp",
         "memory": "cpp"
     },
+    "C_Cpp.errorSquiggles": "Disabled",
 }

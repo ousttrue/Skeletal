@@ -15,13 +15,13 @@ namespace scene
 class GLTFLoader;
 class Scene
 {
-    uint32_t m_time = 0;
+    float m_time = 0;
     uint32_t m_frameCount = 0;
     uint32_t m_seconds = 0;
     uint32_t m_fps = 0;
 
 public:
-    uint32_t GetTime() const { return m_time; }
+    float GetTime() const { return m_time; }
     uint32_t GetFps() const { return m_fps; }
 
 private:
@@ -65,7 +65,7 @@ public:
 
 public:
     void Setup();
-    void Update(uint32_t now);
+    void Update(float now);
     void CreateDefaultScene();
     void Load(const std::wstring &path);
 

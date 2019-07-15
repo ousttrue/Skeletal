@@ -1,8 +1,6 @@
-#include <Windows.h>
-#include <windowsx.h>
 #include "eglapp.h"
-#include "save_windowplacement.h"
 #include "guistate.h"
+#include "win32_window.h"
 
 #include <gles3renderer.h>
 #include <scene.h>
@@ -17,10 +15,11 @@
 ///
 /// const
 ///
-const auto RESOURCE_TYPE = L"SHADERSOURCE";
-const auto CLASS_NAME = L"SkeletalWindow";
 const auto WINDOW_NAME = L"Skeletal";
 
+///
+/// shader
+///
 const std::string g_gizmo_vs =
 #include "../shaders/gizmo.vs"
     ;
@@ -48,12 +47,8 @@ std::string trim(const std::string &src)
 }
 
 ///
-/// globals
+/// logger to imgui
 ///
-agv::renderer::GLES3Renderer *g_renderer = nullptr;
-agv::scene::Scene *g_scene = nullptr;
-agv::gui::GUI *g_gui = nullptr;
-GuiState g_guiState;
 namespace plog
 {
 template <class Formatter>
@@ -81,178 +76,10 @@ protected:
 };
 } // namespace plog
 
-class MouseCapture
-{
-public:
-    enum MouseButton : uint8_t
-    {
-        LEFT = 0x01,
-        MIDDLE = 0x02,
-        RIGHT = 0x04,
-    };
-
-private:
-    MouseButton m_mouseBits = static_cast<MouseButton>(0);
-
-public:
-    void Down(MouseButton button, HWND hwnd)
-    {
-        if (!m_mouseBits)
-        {
-            SetCapture(hwnd);
-            // LOGD << "SetCapture";
-        }
-        m_mouseBits = static_cast<MouseButton>(m_mouseBits | button);
-    }
-
-    void Up(MouseButton button)
-    {
-        m_mouseBits = static_cast<MouseButton>(m_mouseBits & ~button);
-        if (!m_mouseBits)
-        {
-            ReleaseCapture();
-            // LOGD << "ReleaseCapture";
-        }
-    }
-};
-MouseCapture m_capture;
 
 ///
 /// static functions
 ///
-static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam,
-                                LPARAM lParam)
-{
-    switch (msg)
-    {
-    case WM_DESTROY:
-    {
-        windowplacement::Save(hwnd);
-        PostQuitMessage(0);
-        return 0;
-    }
-
-    case WM_ERASEBKGND:
-    {
-        static int s_counter = 0;
-        if (s_counter++)
-        {
-            return 0;
-        }
-        break;
-    }
-
-    case WM_PAINT:
-    {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hwnd, &ps);
-        EndPaint(hwnd, &ps);
-        return 0;
-    }
-
-    case WM_SIZE:
-    {
-        auto w = LOWORD(lParam);
-        auto h = HIWORD(lParam);
-        g_gui->SetScreenSize(w, h);
-        return 0;
-    }
-
-    case WM_MOUSEMOVE:
-    {
-        auto x = GET_X_LPARAM(lParam);
-        auto y = GET_Y_LPARAM(lParam);
-        g_gui->MouseMove(x, y);
-        // g_scene->GetMouseObserver()->MouseMove(x, y);
-        return 0;
-    }
-
-    case WM_LBUTTONDOWN:
-    {
-        m_capture.Down(MouseCapture::LEFT, hwnd);
-        // if (g_gui->IsHover())
-        {
-            g_gui->MouseLeftDown();
-        }
-        // else
-        // {
-        //     g_scene->GetMouseObserver()->MouseLeftDown();
-        // }
-        return 0;
-    }
-
-    case WM_LBUTTONUP:
-    {
-        m_capture.Up(MouseCapture::LEFT);
-        g_gui->MouseLeftUp();
-        // g_scene->GetMouseObserver()->MouseLeftUp();
-        return 0;
-    }
-
-    case WM_MBUTTONDOWN:
-    {
-        m_capture.Down(MouseCapture::MIDDLE, hwnd);
-        // if (g_gui->IsHover())
-        {
-            g_gui->MouseMiddleDown();
-        }
-        // else
-        // {
-        //     g_scene->GetMouseObserver()->MouseMiddleDown();
-        // }
-        return 0;
-    }
-
-    case WM_MBUTTONUP:
-    {
-        m_capture.Up(MouseCapture::MIDDLE);
-        g_gui->MouseMiddleUp();
-        // g_scene->GetMouseObserver()->MouseMiddleUp();
-        return 0;
-    }
-
-    case WM_RBUTTONDOWN:
-    {
-        m_capture.Down(MouseCapture::RIGHT, hwnd);
-        // if (g_gui->IsHover())
-        {
-            g_gui->MouseRightDown();
-        }
-        // else
-        // {
-        //     g_scene->GetMouseObserver()->MouseRightDown();
-        // }
-        return 0;
-    }
-
-    case WM_RBUTTONUP:
-    {
-        m_capture.Up(MouseCapture::RIGHT);
-        g_gui->MouseRightUp();
-        // g_scene->GetMouseObserver()->MouseRightUp();
-        return 0;
-    }
-
-    case WM_MOUSEWHEEL:
-    {
-        auto d = GET_WHEEL_DELTA_WPARAM(wParam);
-
-        // if (g_gui->IsHover())
-        {
-            g_gui->MouseWheel(d);
-        }
-        // else
-        // {
-        //     g_scene->GetMouseObserver()->MouseWheel(d);
-        // }
-
-        return 0;
-    }
-    }
-
-    return DefWindowProc(hwnd, msg, wParam, lParam);
-}
-
 static std::wstring SjisToUnicode(const std::string &src)
 {
     auto size = MultiByteToWideChar(CP_OEMCP, 0, src.c_str(), -1, NULL, 0);
@@ -276,37 +103,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // static plog::DebugOutputAppender<plog::TxtFormatter> debugOutputAppender;
-    static plog::ImGuiAppender<plog::TxtFormatter> appender(&g_guiState.logger);
+    GuiState guiState;
+    static plog::ImGuiAppender<plog::TxtFormatter> appender(&guiState.logger);
     plog::init(plog::verbose, &appender);
 
-    // setup window
-    WNDCLASSEX wndclass = {0};
-    wndclass.cbSize = sizeof(WNDCLASSEX);
-    wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
-    wndclass.lpfnWndProc = WndProc;
-    wndclass.cbClsExtra = 0;
-    wndclass.cbWndExtra = 0;
-    wndclass.hInstance = GetModuleHandle(NULL);
-    wndclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    // wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wndclass.hbrBackground = NULL;
-    wndclass.lpszMenuName = NULL;
-    wndclass.lpszClassName = CLASS_NAME;
-    wndclass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+    Win32Window window;
+    if(!window.Create(CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_NAME))
+    {
+        return 1;
+    }
+    auto hwnd = (HWND)window.GetHandle();
+    LOGD << "CreateWindow";
 
-    RegisterClassEx(&wndclass);
-
-    agv::renderer::ShaderSourceManager::Instance.SetSource(
-        agv::scene::ShaderType::gizmo,
-        trim(g_gizmo_vs),
-        trim(g_gizmo_fs));
-    agv::renderer::ShaderSourceManager::Instance.SetSource(
-        agv::scene::ShaderType::unlit,
-        trim(g_unlit_vs),
-        trim(g_unlit_fs));
+    EglApp app(hwnd);
+    LOGD << "egl initialized";
 
     agv::scene::Scene scene;
-
     if (__argc == 1)
     {
         scene.CreateDefaultScene();
@@ -316,59 +128,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         scene.Load(SjisToUnicode(__argv[1]));
     }
 
-    g_scene = &scene;
-
     agv::renderer::GLES3Renderer renderer;
-    g_renderer = &renderer;
+    agv::renderer::ShaderSourceManager::Instance.SetSource(
+        agv::scene::ShaderType::gizmo,
+        trim(g_gizmo_vs),
+        trim(g_gizmo_fs));
+    agv::renderer::ShaderSourceManager::Instance.SetSource(
+        agv::scene::ShaderType::unlit,
+        trim(g_unlit_vs),
+        trim(g_unlit_fs));
 
     agv::gui::GUI gui;
-    g_gui = &gui;
-
-    LOGD << "CreateWindow";
-    HWND hwnd = CreateWindow(CLASS_NAME, WINDOW_NAME, WS_OVERLAPPEDWINDOW,
-                             CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-                             CW_USEDEFAULT, NULL, NULL, wndclass.hInstance, NULL);
-
-    windowplacement::Restore(hwnd, SW_SHOWNORMAL);
-
-    EglApp app(hwnd);
-    LOGD << "egl initialized";
-
-    DWORD lastTime = 0;
-
-    bool loggerOpen = true;
-
-    while (true)
+    float lastTime = 0;
+    while (window.IsRunning())
     {
-        // message pump
-        MSG msg;
-        while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
-        {
-            if (!GetMessage(&msg, NULL, 0, 0))
-            {
-                return (int)msg.wParam;
-            }
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-
-        // rendering
-        auto now = timeGetTime();
+        // update
+        auto now = window.GetTimeSeconds();
         auto delta = now - lastTime;
         lastTime = now;
 
-        {
-            g_scene->Update(now);
-            g_gui->Begin(hwnd, delta * 0.001f,
-                         g_renderer, g_scene);
+        scene.Update(now);
 
-            g_guiState.Update(g_scene, g_renderer);
-
-            g_gui->End();
-        }
+        // rendering
+        gui.Begin(hwnd, delta, &renderer, &scene);
+        guiState.Update(&scene, &renderer);
+        gui.End();
         app.present();
     }
 
-    // never reach here
     return 0;
 }

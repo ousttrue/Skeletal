@@ -51,13 +51,13 @@ void Scene::CreateDefaultScene()
     m_model->Root->AddChild(node);
 }
 
-void Scene::Update(uint32_t now)
+void Scene::Update(float now)
 {
     auto delta = m_time == 0 ? 0 : now - m_time;
     m_time = now;
 
     m_frameCount++;
-    auto seconds = now / 1000;
+    auto seconds = (int)now;
     if (m_seconds != seconds)
     {
         m_fps = m_frameCount;
@@ -66,8 +66,8 @@ void Scene::Update(uint32_t now)
     }
 
     auto time = AnimationTime{
-        now * 0.001f,
-        delta * 0.001f,
+        now,
+        delta,
     };
 
     if (m_model)

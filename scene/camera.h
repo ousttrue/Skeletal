@@ -95,7 +95,7 @@ public:
         const float ar = m_aspect;
         const float zNear = m_near;
         const float zFar = m_far;
-        const float f = 1.0f / tan(DirectX::XMConvertToRadians(m_fovYDegree / 2.0));
+        const float f = 1.0f / (float)tan(DirectX::XMConvertToRadians(m_fovYDegree * 0.5f));
 
         m_info.Projection.Value._11 = f / ar;
         m_info.Projection.Value._12 = 0.0f;
