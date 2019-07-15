@@ -116,124 +116,6 @@ static void Dockspace()
 
     ImGui::End();
 }
-class Guizmo
-{
-    ImGuizmo::OPERATION mCurrentGizmoOperation = ImGuizmo::ROTATE;
-    ImGuizmo::MODE mCurrentGizmoMode = ImGuizmo::LOCAL;
-    bool useSnap = false;
-    DirectX::XMFLOAT3 snap = {0, 0, 0};
-
-    ImGuiContext *m_context = nullptr;
-
-public:
-    Guizmo()
-    {
-    }
-
-    ~Guizmo()
-    {
-    }
-
-    void ShowGui(dxm::Matrix *pM)
-    {
-        if (ImGui::IsKeyPressed(90))
-            mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-        if (ImGui::IsKeyPressed(69))
-            mCurrentGizmoOperation = ImGuizmo::ROTATE;
-        if (ImGui::IsKeyPressed(82)) // r Key
-            mCurrentGizmoOperation = ImGuizmo::SCALE;
-        if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
-            mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-
-        ImGui::SameLine();
-        if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
-            mCurrentGizmoOperation = ImGuizmo::ROTATE;
-        ImGui::SameLine();
-        if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
-            mCurrentGizmoOperation = ImGuizmo::SCALE;
-        float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-        ImGuizmo::DecomposeMatrixToComponents(pM->data(), matrixTranslation, matrixRotation, matrixScale);
-        ImGui::InputFloat3("Tr", matrixTranslation, 3);
-        ImGui::InputFloat3("Rt", matrixRotation, 3);
-        ImGui::InputFloat3("Sc", matrixScale, 3);
-        ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, pM->data());
-        if (mCurrentGizmoOperation != ImGuizmo::SCALE)
-        {
-            if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
-                mCurrentGizmoMode = ImGuizmo::LOCAL;
-            ImGui::SameLine();
-            if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
-                mCurrentGizmoMode = ImGuizmo::WORLD;
-        }
-        if (ImGui::IsKeyPressed(83))
-            useSnap = !useSnap;
-        ImGui::Checkbox("", &useSnap);
-        ImGui::SameLine();
-        switch (mCurrentGizmoOperation)
-        {
-        case ImGuizmo::TRANSLATE:
-            // snap = config.mSnapTranslation;
-            ImGui::InputFloat3("Snap", &snap.x);
-            break;
-        case ImGuizmo::ROTATE:
-            // snap = config.mSnapRotation;
-            ImGui::InputFloat("Angle Snap", &snap.x);
-            break;
-        case ImGuizmo::SCALE:
-            // snap = config.mSnapScale;
-            ImGui::InputFloat("Scale Snap", &snap.x);
-            break;
-        }
-    }
-
-    void ShowGuizmo(void *hWnd,
-                    const ImVec2 &pos, const ImVec2 &size,
-                    const dxm::Matrix &projection,
-                    const dxm::Matrix &view,
-                    dxm::Matrix *pM)
-    {
-#if 1
-        auto backup = ImGui::GetCurrentContext();
-        {
-            if (!m_context)
-            {
-                m_context = ImGui::CreateContext();
-                ImGui::SetCurrentContext(m_context);
-                ImGui_ImplOpenGL3_Init(glsl_version);
-
-                // copy font
-                m_context->IO.Fonts = backup->IO.Fonts;
-
-                ImGui_ImplWin32_Init(hWnd);
-            }
-            ImGui::SetCurrentContext(m_context);
-
-            // Start the Dear ImGui frame
-            // ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplWin32_NewFrame();
-            ImGui::NewFrame();
-            {
-#endif
-
-                ImGuizmo::BeginFrame();
-                ImGuizmo::SetRect(pos.x, pos.y, size.x, size.y);
-                auto m = dxm::Matrix::Identity;
-                ImGuizmo::DrawGrid(view.data(), projection.data(), m.data(), 5);
-                ImGuizmo::Manipulate(view.data(), projection.data(),
-                                     mCurrentGizmoOperation, mCurrentGizmoMode, pM->data(), NULL,
-                                     useSnap ? &snap.x : NULL);
-
-#if 1
-            }
-            ImGui::EndFrame();
-            ImGui::Render();
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        }
-        ImGui::SetCurrentContext(backup);
-#endif
-    }
-};
-Guizmo g_guizmo;
 
 ///
 /// logger to imgui
@@ -375,7 +257,7 @@ public:
                 {
                     auto model = selection->GetWorldMatrix();
                     info.CalcMvp(model);
-                    g_guizmo.ShowGuizmo(m_hWnd, ImVec2(0, 0), size, info.Projection, info.View, &model);
+                    // g_guizmo.ShowGuizmo(m_hWnd, ImVec2(0, 0), size, info.Projection, info.View, &model);
                     selection->SetWorldMatrix(model);
                 }
             }
@@ -397,7 +279,13 @@ public:
             if (ImGui::Begin("selected"))
             {
                 auto model = selection->GetWorldMatrix();
-                g_guizmo.ShowGui(&model);
+                // ShowGui(&model);
+                float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+                ImGuizmo::DecomposeMatrixToComponents(model.data(), matrixTranslation, matrixRotation, matrixScale);
+                ImGui::InputFloat3("Tr", matrixTranslation, 3);
+                ImGui::InputFloat3("Rt", matrixRotation, 3);
+                ImGui::InputFloat3("Sc", matrixScale, 3);
+                ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, model.data());
                 selection->SetWorldMatrix(model);
             }
             ImGui::End();
