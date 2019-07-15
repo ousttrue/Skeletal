@@ -382,15 +382,8 @@ public:
 
             auto result = m_renderer.End(&info);
 
-            // show render target
-            ImGui::Image(result, size);
-
-            {
-                auto cy = pos.y + size.y * 0.5f;
-                auto &buf = ImGui::GetWindowDrawList()->VtxBuffer;
-                for (int i = 0; i < buf.Size; i++)
-                    buf[i].pos.y += (cy - buf[i].pos.y) * 2;
-            }
+            // show render target. vertical flip
+            ImGui::Image(result, size, ImVec2(0, 1), ImVec2(1, 0));
         }
         ImGui::End();
 
