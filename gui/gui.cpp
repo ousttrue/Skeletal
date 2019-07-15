@@ -1,5 +1,6 @@
 #include "gui.h"
 #include "window_state.h"
+#include "guistate.h"
 #include <imgui.h>
 #include <examples/imgui_impl_opengl3.h>
 #include <examples/imgui_impl_win32.h>
@@ -234,6 +235,36 @@ public:
 };
 Guizmo g_guizmo;
 
+///
+/// logger to imgui
+///
+namespace plog
+{
+template <class Formatter>
+class ImGuiAppender : public IAppender
+{
+    std::string *m_buffer;
+
+public:
+    ImGuiAppender(std::string *buffer) : m_buffer(buffer), m_isatty(false) {}
+
+    virtual void write(const Record &record)
+    {
+        util::nstring str = Formatter::format(record);
+        util::MutexLock lock(m_mutex);
+
+        for (auto c : str)
+        {
+            m_buffer->push_back(static_cast<char>(c));
+        }
+    }
+
+protected:
+    util::Mutex m_mutex;
+    const bool m_isatty;
+};
+} // namespace plog
+
 namespace agv
 {
 namespace gui
@@ -243,9 +274,12 @@ class GUIImpl
     void *m_hWnd = nullptr;
     bool m_openView = true;
 
+    GuiState guiState;
+    plog::ImGuiAppender<plog::TxtFormatter> appender;
+
 public:
     GUIImpl(void *hWnd)
-        : m_hWnd(hWnd)
+        : m_hWnd(hWnd), appender(&guiState.logger)
     {
         ImGui::CreateContext();
         ImGuiIO &io = ImGui::GetIO();
@@ -258,6 +292,8 @@ public:
         //ImGui_ImplOpenGL3_CreateFontsTexture();
         ImGui_ImplOpenGL3_Init(glsl_version);
         ImGui_ImplWin32_Init(hWnd);
+
+        plog::init(plog::verbose, &appender);
     }
 
     ~GUIImpl()
@@ -372,6 +408,8 @@ public:
             }
             ImGui::End();
         }
+
+        guiState.Update(scene, renderer);
     }
 
     void End()
@@ -393,17 +431,13 @@ GUI::~GUI()
     }
 }
 
-void GUI::Begin(const WindowState *state, float deltaSeconds, agv::renderer::GLES3Renderer *renderer, agv::scene::Scene *scene)
+void GUI::Draw(const WindowState *state, float deltaSeconds, agv::renderer::GLES3Renderer *renderer, agv::scene::Scene *scene)
 {
     if (!m_impl)
     {
         m_impl = new GUIImpl(state->Handle);
     }
     m_impl->Begin(state, deltaSeconds, renderer, scene);
-}
-
-void GUI::End()
-{
     m_impl->End();
 }
 } // namespace gui

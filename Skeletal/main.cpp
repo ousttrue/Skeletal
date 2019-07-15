@@ -1,16 +1,9 @@
 #include "eglapp.h"
-#include "guistate.h"
 #include "win32_window.h"
-
 #include <gles3renderer.h>
 #include <scene.h>
 #include <gui.h>
-
 #include <plog/Log.h>
-#include <plog/Appenders/DebugOutputAppender.h>
-#include <assert.h>
-#include <stdint.h>
-#include <string>
 
 ///
 /// const
@@ -46,36 +39,6 @@ std::string trim(const std::string &src)
     return std::string(it, src.end());
 }
 
-///
-/// logger to imgui
-///
-namespace plog
-{
-template <class Formatter>
-class ImGuiAppender : public IAppender
-{
-    std::string *m_buffer;
-
-public:
-    ImGuiAppender(std::string *buffer) : m_buffer(buffer), m_isatty(false) {}
-
-    virtual void write(const Record &record)
-    {
-        util::nstring str = Formatter::format(record);
-        util::MutexLock lock(m_mutex);
-
-        for (auto c : str)
-        {
-            m_buffer->push_back(static_cast<char>(c));
-        }
-    }
-
-protected:
-    util::Mutex m_mutex;
-    const bool m_isatty;
-};
-} // namespace plog
-
 
 ///
 /// static functions
@@ -102,10 +65,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    // static plog::DebugOutputAppender<plog::TxtFormatter> debugOutputAppender;
-    GuiState guiState;
-    static plog::ImGuiAppender<plog::TxtFormatter> appender(&guiState.logger);
-    plog::init(plog::verbose, &appender);
+    agv::gui::GUI gui;
 
     Win32Window window;
     if(!window.Create(CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_NAME))
@@ -138,7 +98,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         trim(g_unlit_vs),
         trim(g_unlit_fs));
 
-    agv::gui::GUI gui;
     float lastTime = 0;
     while (window.IsRunning())
     {
@@ -151,9 +110,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         auto state = window.GetState();
 
         // rendering
-        gui.Begin(&state, delta, &renderer, &scene);
-        guiState.Update(&scene, &renderer);
-        gui.End();
+        gui.Draw(&state, delta, &renderer, &scene);
         app.present();
     }
 

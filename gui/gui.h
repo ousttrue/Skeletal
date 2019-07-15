@@ -25,10 +25,9 @@ public:
     GUI();
     ~GUI();
 
-    void Begin(const WindowState *state, float deltaSeconds,
+    void Draw(const WindowState *state, float deltaSeconds,
                agv::renderer::GLES3Renderer *renderer,
                agv::scene::Scene *scene);
-    void End();
 };
 
 } // namespace gui
