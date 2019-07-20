@@ -19,6 +19,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
     common
     scene
     dx11
+    view
     gui
     WinMM
     d3d11

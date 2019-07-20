@@ -16,4 +16,4 @@ ADD_COMPILE_OPTIONS(
     /std:c++latest 
     /EHsc
     )
-SUBDIRS(common scene gui dx11 Skeletal)
+SUBDIRS(common scene gui dx11 view Skeletal)
