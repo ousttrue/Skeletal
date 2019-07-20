@@ -4,14 +4,12 @@
 namespace skeletal::scene
 {
 class Scene;
-
 }
 
-namespace skeletal::es3
+namespace skeletal::dx11
 {
 class Renderer;
-
-} // namespace skeletal::es3
+} // namespace skeletal::dx11
 
 struct GuiState
 {
@@ -21,5 +19,5 @@ struct GuiState
     std::string logger;
 
     void Update(skeletal::scene::Scene *scene,
-                skeletal::es3::Renderer *renderer);
+                skeletal::dx11::Renderer *renderer);
 };

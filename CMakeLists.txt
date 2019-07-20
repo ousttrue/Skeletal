@@ -16,4 +16,4 @@ ADD_COMPILE_OPTIONS(
     /std:c++latest 
     /EHsc
     )
-SUBDIRS(gles3renderer scene gui Skeletal)
+SUBDIRS(dx11 scene gui Skeletal)

@@ -1,5 +1,6 @@
-#include "eglapp.h"
+#include "dx11_context.h"
 #include "win32_window.h"
+#include <Windows.h>
 #include <scene.h>
 #include <gui.h>
 #include <plog/Log.h>
@@ -31,15 +32,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     skeletal::gui::GUI gui;
 
     Win32Window window;
-    if(!window.Create(CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_NAME))
+    if (!window.Create(CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_NAME))
     {
         return 1;
     }
     auto hwnd = (HWND)window.GetState().Handle;
     LOGD << "CreateWindow";
 
-    EglApp app(hwnd);
-    LOGD << "egl initialized";
+    DX11Context dx11;
+    auto device = dx11.Create(hwnd);
+    if (!device)
+    {
+        return 2;
+    }
+    LOGD << "dx11 initialized";
+    auto deviceContext = dx11.GetDeviceContext();
 
     skeletal::scene::Scene scene;
     if (__argc == 1)
@@ -59,7 +66,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         auto now = window.GetTimeSeconds();
         auto delta = now - lastTime;
         lastTime = now;
-        if(startTime==0)
+        if (startTime == 0)
         {
             startTime = lastTime;
         }
@@ -67,9 +74,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
         auto state = window.GetState();
 
+        dx11.NewFrame(state.Width, state.Height);
+
         // rendering
-        gui.Draw(&state, delta, &scene);
-        app.present();
+        gui.Draw(device, deviceContext, &state, delta, &scene);
+
+        dx11.Present();
     }
 
     return 0;

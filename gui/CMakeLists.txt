@@ -15,8 +15,8 @@ FILE(GLOB SRC
     ${DEPENDENCIES}/imgui/stb_rect_pack.h
     ${DEPENDENCIES}/imgui/stb_textedit.h
     ${DEPENDENCIES}/imgui/stb_truetype.h
-    ${DEPENDENCIES}/imgui/examples/imgui_impl_opengl3.h
-    ${DEPENDENCIES}/imgui/examples/imgui_impl_opengl3.cpp
+    ${DEPENDENCIES}/imgui/examples/imgui_impl_dx11.h
+    ${DEPENDENCIES}/imgui/examples/imgui_impl_dx11.cpp
     ${DEPENDENCIES}/imgui/examples/imgui_impl_win32.h
     ${DEPENDENCIES}/imgui/examples/imgui_impl_win32.cpp
     ${DEPENDENCIES}/ImGuizmo/*.h
@@ -41,5 +41,5 @@ TARGET_INCLUDE_DIRECTORIES(${SUB_NAME} PUBLIC
     ../dependencies/ImGuizmo
     ../dependencies/im3d
     ../scene
-    ../gles3renderer
+    ../dx11
 	)

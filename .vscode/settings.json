@@ -35,6 +35,7 @@
         "XMMATRIX",
         "XMVECTOR",
         "centrarl",
+        "countof",
         "imgui",
         "nlohmann",
         "plog",

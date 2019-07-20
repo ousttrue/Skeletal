@@ -2,12 +2,12 @@
 #include "window_state.h"
 #include "guistate.h"
 #include "orbit_camera.h"
-#include "im3d_gui.h"
+// #include "im3d_gui.h"
 #include <imgui.h>
-#include <examples/imgui_impl_opengl3.h>
+#include <examples/imgui_impl_dx11.h>
 #include <examples/imgui_impl_win32.h>
 #include <exception>
-#include <gles3renderer.h>
+#include <dx11.h>
 #include <scene.h>
 #include <ImGuizmo.h>
 #include <imgui_internal.h>
@@ -159,12 +159,12 @@ class GUIImpl
 
     GuiState m_guiState;
     plog::ImGuiAppender<plog::TxtFormatter> m_appender;
-    skeletal::es3::Renderer m_renderer;
-    Im3dGui m_im3d;
+    skeletal::dx11::Renderer m_renderer;
+    // Im3dGui m_im3d;
     OrbitCamera m_camera;
 
 public:
-    GUIImpl(void *hWnd)
+    GUIImpl(void *hWnd, ID3D11Device *device, ID3D11DeviceContext *deviceContext)
         : m_hWnd(hWnd), m_appender(&m_guiState.logger)
     {
         ImGui::CreateContext();
@@ -176,24 +176,27 @@ public:
         io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;  // We can honor io.WantSetMousePos requests (optional, rarely used)
 
         //ImGui_ImplOpenGL3_CreateFontsTexture();
-        ImGui_ImplOpenGL3_Init(glsl_version);
+        // ImGui_ImplOpenGL3_Init(glsl_version);
+        ImGui_ImplDX11_Init(device, deviceContext);
         ImGui_ImplWin32_Init(hWnd);
 
         plog::init(plog::verbose, &m_appender);
 
-        m_im3d.Initialize();
+        // m_im3d.Initialize();
     }
 
     ~GUIImpl()
     {
-        ImGui_ImplOpenGL3_Shutdown();
+        // ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplDX11_Shutdown();
         ImGui::DestroyContext();
     }
 
     void Begin(const WindowState *state, float deltaSeconds, scene::Scene *scene)
     {
         // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
+        // ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
 
         ImGuiIO &io = ImGui::GetIO();
@@ -286,7 +289,8 @@ public:
     void End()
     {
         ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
     }
 };
 
@@ -302,11 +306,13 @@ GUI::~GUI()
     }
 }
 
-void GUI::Draw(const WindowState *state, float deltaSeconds, skeletal::scene::Scene *scene)
+void GUI::Draw(void *device, void *deviceContext,
+               const WindowState *state,
+               float deltaSeconds, skeletal::scene::Scene *scene)
 {
     if (!m_impl)
     {
-        m_impl = new GUIImpl(state->Handle);
+        m_impl = new GUIImpl(state->Handle, (ID3D11Device *)device, (ID3D11DeviceContext *)deviceContext);
     }
     m_impl->Begin(state, deltaSeconds, scene);
     m_impl->End();

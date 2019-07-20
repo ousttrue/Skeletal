@@ -1,6 +1,6 @@
 #include "guistate.h"
 #include <scene.h>
-#include <gles3renderer.h>
+#include <dx11.h>
 #include <imgui.h>
 // #include <imgui_widgets.cpp>
 #include <memory>
@@ -94,7 +94,7 @@ struct NodeTreeDrawer
 };
 static NodeTreeDrawer m_tree;
 
-void GuiState::Update(skeletal::scene::Scene *scene, skeletal::es3::Renderer *renderer)
+void GuiState::Update(skeletal::scene::Scene *scene, skeletal::dx11::Renderer *renderer)
 {
     ////////////////////////////////////////////////////////////
 

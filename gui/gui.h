@@ -23,8 +23,9 @@ public:
     GUI();
     ~GUI();
 
-    void Draw(const WindowState *state, float deltaSeconds,
-              skeletal::scene::Scene *scene);
+    void Draw(void *device, void *deviceContext,
+        const WindowState *state, float deltaSeconds,
+        skeletal::scene::Scene *scene);
 };
 
 } // namespace skeletal::gui
