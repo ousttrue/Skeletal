@@ -218,6 +218,8 @@ public:
         Dockspace();
 
         // render centrarl wigets
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         if (ImGui::Begin("3DView", &m_openView,
                          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
         {
@@ -242,6 +244,7 @@ public:
             ImGui::ImageButton(texture, size, ImVec2(0, 0), ImVec2(1, 1), 0);
         }
         ImGui::End();
+        ImGui::PopStyleVar();
 
         auto firstSelection = scene->m_selection.begin();
         if (m_openView && firstSelection != scene->m_selection.end())
