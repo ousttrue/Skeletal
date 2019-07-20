@@ -6,21 +6,21 @@
 namespace skeletal::es3
 {
 ///
-/// GLES3VertexBuffer
+/// VertexBuffer
 ///
-GLES3VertexBuffer::GLES3VertexBuffer()
+VertexBuffer::VertexBuffer()
 {
     glGenBuffers(1, &m_vbo);
     assert(m_vbo);
 }
 
-GLES3VertexBuffer::~GLES3VertexBuffer()
+VertexBuffer::~VertexBuffer()
 {
     glDeleteBuffers(1, &m_vbo);
     m_vbo = 0;
 }
 
-void GLES3VertexBuffer::Bind()
+void VertexBuffer::Bind()
 {
     if (m_isIndex)
     {
@@ -32,7 +32,7 @@ void GLES3VertexBuffer::Bind()
     }
 }
 
-void GLES3VertexBuffer::Unbind()
+void VertexBuffer::Unbind()
 {
     if (m_isIndex)
     {
@@ -44,17 +44,17 @@ void GLES3VertexBuffer::Unbind()
     }
 }
 
-void GLES3VertexBuffer::UnbindIndex()
+void VertexBuffer::UnbindIndex()
 {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void GLES3VertexBuffer::UnbindAttribute()
+void VertexBuffer::UnbindAttribute()
 {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void GLES3VertexBuffer::BufferData(bool isIndex, const std::byte *values, size_t byteSize, int componentCount)
+void VertexBuffer::BufferData(bool isIndex, const std::byte *values, size_t byteSize, int componentCount)
 {
     m_isIndex = isIndex;
     m_componentCount = componentCount;
@@ -74,24 +74,24 @@ void GLES3VertexBuffer::BufferData(bool isIndex, const std::byte *values, size_t
 }
 
 ///
-/// GLES3VertexBufferGroup
+/// VertexBufferGroup
 ///
-GLES3VertexBufferGroup::GLES3VertexBufferGroup(int vertexCount, simplegltf::GltfTopologyType topology)
+VertexBufferGroup::VertexBufferGroup(int vertexCount, simplegltf::GltfTopologyType topology)
     : m_vertexCount(vertexCount), m_topology(static_cast<uint32_t>(topology))
 {
 }
 
-void GLES3VertexBufferGroup::AddAttribute(const std::string &semantic, const simplegltf::View &view)
+void VertexBufferGroup::AddAttribute(const std::string &semantic, const simplegltf::View &view)
 {
-    auto vbo = std::make_shared<GLES3VertexBuffer>();
+    auto vbo = std::make_shared<VertexBuffer>();
     vbo->BufferData(false, view.data, view.size, simplegltf::get_component_count(view.valuetype));
     m_attributes.insert(std::make_pair(semantic, vbo));
     vbo->Unbind();
 }
 
-void GLES3VertexBufferGroup::SetIndex(const simplegltf::View &view)
+void VertexBufferGroup::SetIndex(const simplegltf::View &view)
 {
-    auto vbo = std::make_shared<GLES3VertexBuffer>();
+    auto vbo = std::make_shared<VertexBuffer>();
     vbo->BufferData(true, view.data, view.size, 1);
     m_indices = vbo;
     vbo->Unbind();
@@ -110,7 +110,7 @@ void GLES3VertexBufferGroup::SetIndex(const simplegltf::View &view)
     }
 }
 
-void GLES3VertexBufferGroup::Draw(int offset, int count)
+void VertexBufferGroup::Draw(int offset, int count)
 {
     if (m_indices)
     {
@@ -124,37 +124,37 @@ void GLES3VertexBufferGroup::Draw(int offset, int count)
 }
 
 ///
-/// GLES3VertexArray
+/// VertexArray
 ///
-GLES3VertexArray::GLES3VertexArray()
+VertexArray::VertexArray()
 {
     glGenVertexArrays(1, &m_vao);
     assert(m_vao);
 }
 
-GLES3VertexArray::~GLES3VertexArray()
+VertexArray::~VertexArray()
 {
     glDeleteVertexArrays(1, &m_vao);
     m_vao = 0;
 }
 
-void GLES3VertexArray::Bind()
+void VertexArray::Bind()
 {
     glBindVertexArray(m_vao);
 }
 
-void GLES3VertexArray::Unbind()
+void VertexArray::Unbind()
 {
     glBindVertexArray(0);
 }
 
-void GLES3VertexArray::BindSlot(int slot, const std::shared_ptr<GLES3VertexBuffer> &vbo)
+void VertexArray::BindSlot(int slot, const std::shared_ptr<VertexBuffer> &vbo)
 {
     glVertexAttribPointer(slot, vbo->GetComponentCount(), GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(slot);
 }
 
-void GLES3VertexArray::UnbindSlot(int slot)
+void VertexArray::UnbindSlot(int slot)
 {
     glDisableVertexAttribArray(slot);
 }

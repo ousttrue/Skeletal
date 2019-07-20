@@ -4,7 +4,7 @@ struct WindowState;
 
 namespace skeletal::es3
 {
-class GLES3Renderer;
+class Renderer;
 }
 
 namespace skeletal::scene

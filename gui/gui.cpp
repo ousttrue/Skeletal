@@ -159,7 +159,7 @@ class GUIImpl
 
     GuiState m_guiState;
     plog::ImGuiAppender<plog::TxtFormatter> m_appender;
-    skeletal::es3::GLES3Renderer m_renderer;
+    skeletal::es3::Renderer m_renderer;
     Im3dGui m_im3d;
     OrbitCamera m_camera;
 

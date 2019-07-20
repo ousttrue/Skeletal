@@ -9,7 +9,7 @@ class Scene;
 
 namespace skeletal::es3
 {
-class GLES3Renderer;
+class Renderer;
 
 } // namespace skeletal::es3
 
@@ -21,5 +21,5 @@ struct GuiState
     std::string logger;
 
     void Update(skeletal::scene::Scene *scene,
-                skeletal::es3::GLES3Renderer *renderer);
+                skeletal::es3::Renderer *renderer);
 };

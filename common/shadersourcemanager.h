@@ -1,7 +1,7 @@
 #pragma once
 #include "material.h"
 
-namespace skeletal::es3
+namespace skeletal
 {
 
 struct ShaderSource
@@ -45,4 +45,4 @@ public:
     static ShaderSourceManager Instance;
 };
 
-} // namespace skeletal::es3
+} // namespace skeletal

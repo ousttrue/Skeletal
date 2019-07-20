@@ -9,15 +9,15 @@
 namespace skeletal::es3
 {
 
-class GLES3VertexBuffer
+class VertexBuffer
 {
     bool m_isIndex = false;
     uint32_t m_vbo = 0;
     int m_componentCount = 0;
 
 public:
-    GLES3VertexBuffer();
-    ~GLES3VertexBuffer();
+    VertexBuffer();
+    ~VertexBuffer();
     void Bind();
     void Unbind();
     static void UnbindIndex();
@@ -29,11 +29,11 @@ public:
 ///
 /// scene Mesh から作られるVBOをグループ化する
 ///
-class GLES3VertexBufferGroup
+class VertexBufferGroup
 {
 public:
-    std::unordered_map<std::string, std::shared_ptr<GLES3VertexBuffer>> m_attributes;
-    std::shared_ptr<GLES3VertexBuffer> m_indices;
+    std::unordered_map<std::string, std::shared_ptr<VertexBuffer>> m_attributes;
+    std::shared_ptr<VertexBuffer> m_indices;
 
 private:
     uint32_t m_topology;
@@ -43,8 +43,8 @@ private:
     uint32_t m_indexType;
 
 public:
-    GLES3VertexBufferGroup(int vertexCount, simplegltf::GltfTopologyType topology);
-    GLES3VertexBufferGroup(int vertexCount) : GLES3VertexBufferGroup(vertexCount, simplegltf::GltfTopologyType::TRIANGLES)
+    VertexBufferGroup(int vertexCount, simplegltf::GltfTopologyType topology);
+    VertexBufferGroup(int vertexCount) : VertexBufferGroup(vertexCount, simplegltf::GltfTopologyType::TRIANGLES)
     {
     }
     void AddAttribute(const std::string &semantic, const simplegltf::View &view);
@@ -53,16 +53,16 @@ public:
 };
 
 ///
-/// GLES3VertexBufferGroup と Material からVAOを作成する(Shaderの頂点Attributeの並びが違うかもしれない)
+/// VertexBufferGroup と Material からVAOを作成する(Shaderの頂点Attributeの並びが違うかもしれない)
 ///
-class GLES3VertexArray
+class VertexArray
 {
     uint32_t m_vao = 0;
 
 public:
-    GLES3VertexArray();
-    ~GLES3VertexArray();
-    void BindSlot(int slot, const std::shared_ptr<GLES3VertexBuffer> &vbo);
+    VertexArray();
+    ~VertexArray();
+    void BindSlot(int slot, const std::shared_ptr<VertexBuffer> &vbo);
     void UnbindSlot(int slot);
     void Bind();
     static void Unbind();

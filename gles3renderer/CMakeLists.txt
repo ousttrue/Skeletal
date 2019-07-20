@@ -6,7 +6,9 @@ FILE(GLOB SRC
 	) 
 
 ADD_LIBRARY(${SUB_NAME} 
-    ${SRC})
+    ${SRC}
+	${CMAKE_CURRENT_LIST_DIR}/../common/shadersourcemanager.cpp
+	)
 
 TARGET_COMPILE_DEFINITIONS(${SUB_NAME} PUBLIC
 	UNICODE=1

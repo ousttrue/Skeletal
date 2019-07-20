@@ -7,17 +7,17 @@
 namespace skeletal::es3
 {
 
-class GLES3Shader
+class Shader
 {
     uint32_t m_program = 0;
 
 public:
     std::unordered_map<std::string, uint32_t> AttributeMap;
-    GLES3Shader(uint32_t program);
-    ~GLES3Shader();
+    Shader(uint32_t program);
+    ~Shader();
 
     // scene::ShaderType
-    static std::shared_ptr<GLES3Shader> Create(int shaderType);
+    static std::shared_ptr<Shader> Create(int shaderType);
 
     uint32_t GetUniformLocation(const std::string &name);
     void SetUniformValue(uint32_t location, const float m[16]);

@@ -49,11 +49,11 @@ namespace skeletal::es3
 ///
 /// resource manager
 ///
-struct GLES3RendererImpl
+struct RendererImpl
 {
     /// shader
-    std::unordered_map<skeletal::scene::ShaderType, std::shared_ptr<GLES3Shader>> m_shader_map;
-    std::shared_ptr<GLES3Shader> GetOrCreateShader(skeletal::scene::ShaderType shaderType)
+    std::unordered_map<skeletal::scene::ShaderType, std::shared_ptr<Shader>> m_shader_map;
+    std::shared_ptr<Shader> GetOrCreateShader(skeletal::scene::ShaderType shaderType)
     {
         auto found = m_shader_map.find(shaderType);
         if (found != m_shader_map.end())
@@ -61,10 +61,10 @@ struct GLES3RendererImpl
             return found->second;
         }
 
-        auto shader = GLES3Shader::Create((int)shaderType);
+        auto shader = Shader::Create((int)shaderType);
         if (!shader)
         {
-            LOGE << "fail to GLES3Shader::Create";
+            LOGE << "fail to Shader::Create";
             return nullptr;
         }
         m_shader_map.insert(std::make_pair(shaderType, shader));
@@ -73,7 +73,7 @@ struct GLES3RendererImpl
     }
 
     /// texture
-    std::unordered_map<uint32_t, std::shared_ptr<GLES3Texture>> m_texture_map;
+    std::unordered_map<uint32_t, std::shared_ptr<Texture>> m_texture_map;
     void *GetTexture(uint32_t id) const
     {
         auto found = m_texture_map.find(id);
@@ -83,7 +83,7 @@ struct GLES3RendererImpl
         }
         return nullptr;
     }
-    std::shared_ptr<GLES3Texture> GetOrCreateTexture(const skeletal::scene::Texture *pTexture)
+    std::shared_ptr<Texture> GetOrCreateTexture(const skeletal::scene::Texture *pTexture)
     {
         auto found = m_texture_map.find(pTexture->GetID());
         if (found != m_texture_map.end())
@@ -91,7 +91,7 @@ struct GLES3RendererImpl
             return found->second;
         }
 
-        auto texture = std::make_shared<GLES3Texture>();
+        auto texture = std::make_shared<Texture>();
         m_texture_map.insert(std::make_pair(pTexture->GetID(), texture));
 
         StbImage image;
@@ -107,8 +107,8 @@ struct GLES3RendererImpl
     }
 
     /// material
-    std::unordered_map<uint32_t, std::shared_ptr<GLES3Material>> m_material_map;
-    std::shared_ptr<GLES3Material> GetOrCreateMaterial(const skeletal::scene::Material *pMaterial)
+    std::unordered_map<uint32_t, std::shared_ptr<Material>> m_material_map;
+    std::shared_ptr<Material> GetOrCreateMaterial(const skeletal::scene::Material *pMaterial)
     {
         auto found = m_material_map.find(pMaterial->GetID());
         if (found != m_material_map.end())
@@ -116,7 +116,7 @@ struct GLES3RendererImpl
             return found->second;
         }
 
-        auto material = std::make_shared<GLES3Material>();
+        auto material = std::make_shared<Material>();
         m_material_map.insert(std::make_pair(pMaterial->GetID(), material));
 
         material->Shader = GetOrCreateShader(pMaterial->ShaderType);
@@ -131,8 +131,8 @@ struct GLES3RendererImpl
     }
 
     /// vertex buffer
-    std::unordered_map<uint32_t, std::shared_ptr<GLES3VertexBufferGroup>> m_vertexBuffer_map;
-    std::shared_ptr<GLES3VertexBufferGroup> GetOrCreateVertexBuffer(const skeletal::scene::Mesh *pMesh)
+    std::unordered_map<uint32_t, std::shared_ptr<VertexBufferGroup>> m_vertexBuffer_map;
+    std::shared_ptr<VertexBufferGroup> GetOrCreateVertexBuffer(const skeletal::scene::Mesh *pMesh)
     {
         {
             auto found = m_vertexBuffer_map.find(pMesh->GetID());
@@ -142,7 +142,7 @@ struct GLES3RendererImpl
             }
         }
 
-        auto vbo = std::make_shared<GLES3VertexBufferGroup>(pMesh->GetVertexCount(), pMesh->Topology);
+        auto vbo = std::make_shared<VertexBufferGroup>(pMesh->GetVertexCount(), pMesh->Topology);
         m_vertexBuffer_map.insert(std::make_pair(pMesh->GetID(), vbo));
 
         for (auto pair : pMesh->VertexAttributes)
@@ -159,11 +159,11 @@ struct GLES3RendererImpl
         return vbo;
     }
 
-    std::unordered_map<uint32_t, std::shared_ptr<GLES3VertexArray>> m_vertexArray_map;
-    std::shared_ptr<GLES3VertexArray> GetOrCreateVertexArray(
+    std::unordered_map<uint32_t, std::shared_ptr<VertexArray>> m_vertexArray_map;
+    std::shared_ptr<VertexArray> GetOrCreateVertexArray(
         const skeletal::scene::Submesh *pSubmesh,
-        const std::shared_ptr<GLES3VertexBufferGroup> &vbo,
-        const std::shared_ptr<GLES3Shader> &shader)
+        const std::shared_ptr<VertexBufferGroup> &vbo,
+        const std::shared_ptr<Shader> &shader)
     {
         {
             auto found = m_vertexArray_map.find(pSubmesh->GetID());
@@ -173,7 +173,7 @@ struct GLES3RendererImpl
             }
         }
 
-        auto vao = std::make_shared<GLES3VertexArray>();
+        auto vao = std::make_shared<VertexArray>();
         m_vertexArray_map.insert(std::make_pair(pSubmesh->GetID(), vao));
 
         vao->Bind();
@@ -192,26 +192,26 @@ struct GLES3RendererImpl
             vbo->m_indices->Bind();
         }
 
-        GLES3VertexArray::Unbind();
-        GLES3VertexBuffer::UnbindIndex();
-        GLES3VertexBuffer::UnbindAttribute();
+        VertexArray::Unbind();
+        VertexBuffer::UnbindIndex();
+        VertexBuffer::UnbindAttribute();
 
         return vao;
     }
 
-    std::unordered_map<uint32_t, std::shared_ptr<GLES3FrameBufferObject>> m_camera_map;
-    std::shared_ptr<GLES3FrameBufferObject> GetOrCreateCamera(
+    std::unordered_map<uint32_t, std::shared_ptr<FrameBufferObject>> m_camera_map;
+    std::shared_ptr<FrameBufferObject> GetOrCreateCamera(
         uint32_t cameraID, int width, int height)
     {
         auto found = m_camera_map.find(cameraID);
-        std::shared_ptr<GLES3FrameBufferObject> fbo;
+        std::shared_ptr<FrameBufferObject> fbo;
         if (found != m_camera_map.end())
         {
             fbo = found->second;
         }
         else
         {
-            fbo = std::make_shared<GLES3FrameBufferObject>();
+            fbo = std::make_shared<FrameBufferObject>();
             m_camera_map.insert(std::make_pair(cameraID, fbo));
         }
 
@@ -221,17 +221,17 @@ struct GLES3RendererImpl
     }
 };
 
-GLES3Renderer::GLES3Renderer()
-    : m_impl(new GLES3RendererImpl)
+Renderer::Renderer()
+    : m_impl(new RendererImpl)
 {
 }
 
-GLES3Renderer::~GLES3Renderer()
+Renderer::~Renderer()
 {
     delete m_impl;
 }
 
-void GLES3Renderer::DrawNode(const camera::CameraState *info, const skeletal::scene::Node *node)
+void Renderer::DrawNode(const camera::CameraState *info, const skeletal::scene::Node *node)
 {
     auto &meshGroup = node->MeshGroup;
     if (meshGroup)
@@ -267,12 +267,12 @@ void GLES3Renderer::DrawNode(const camera::CameraState *info, const skeletal::sc
                 }
                 offset += submesh->GetDrawCount();
             }
-            GLES3VertexArray::Unbind();
+            VertexArray::Unbind();
         }
     }
 }
 
-void GLES3Renderer::Begin(const camera::CameraState *pInfo, skeletal::scene::Scene *pScene)
+void Renderer::Begin(const camera::CameraState *pInfo, skeletal::scene::Scene *pScene)
 {
     // auto &vp = pInfo->Viewport;
     // auto &clear = pInfo->ClearColor.Value;
@@ -307,7 +307,7 @@ void GLES3Renderer::Begin(const camera::CameraState *pInfo, skeletal::scene::Sce
     }
 }
 
-void *GLES3Renderer::End(const camera::CameraState *pInfo)
+void *Renderer::End(const camera::CameraState *pInfo)
 {
     auto camera = m_impl->GetOrCreateCamera(pInfo->UserDataAsUInt(),
                                             pInfo->viewportWidth, pInfo->viewportHeight);
@@ -315,7 +315,7 @@ void *GLES3Renderer::End(const camera::CameraState *pInfo)
     return (void *)(int64_t)camera->GetTexture()->GetGLValue();
 }
 
-void GLES3Renderer::DrawModel(const camera::CameraState *pInfo,
+void Renderer::DrawModel(const camera::CameraState *pInfo,
                               const skeletal::scene::Model *pModel)
 {
     for (auto &node : pModel->Nodes)
@@ -324,7 +324,7 @@ void GLES3Renderer::DrawModel(const camera::CameraState *pInfo,
     }
 }
 
-void *GLES3Renderer::GetTexture(uint32_t id) const
+void *Renderer::GetTexture(uint32_t id) const
 {
     return m_impl->GetTexture(id);
 }

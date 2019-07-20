@@ -42,11 +42,11 @@ static GLuint LoadShader(GLenum type, const char *shaderSrc)
 
 namespace skeletal::es3
 {
-GLES3Shader::GLES3Shader(GLuint program) : m_program(program)
+Shader::Shader(GLuint program) : m_program(program)
 {
 }
 
-GLES3Shader::~GLES3Shader()
+Shader::~Shader()
 {
     if (m_program)
     {
@@ -55,7 +55,7 @@ GLES3Shader::~GLES3Shader()
     }
 }
 
-std::shared_ptr<GLES3Shader> GLES3Shader::Create(int shaderType)
+std::shared_ptr<Shader> Shader::Create(int shaderType)
 {
     auto source = ShaderSourceManager::Instance.GetSource(static_cast<scene::ShaderType>(shaderType));
     auto vertexShader = LoadShader(GL_VERTEX_SHADER, source->vs.c_str());
@@ -102,7 +102,7 @@ std::shared_ptr<GLES3Shader> GLES3Shader::Create(int shaderType)
         return nullptr;
     }
 
-    auto shader = std::make_shared<GLES3Shader>(program);
+    auto shader = std::make_shared<Shader>(program);
 
     // attributes
     {
@@ -142,30 +142,30 @@ std::shared_ptr<GLES3Shader> GLES3Shader::Create(int shaderType)
     return shader;
 }
 
-void GLES3Shader::Use()
+void Shader::Use()
 {
     glUseProgram(m_program);
 }
 
-uint32_t GLES3Shader::GetUniformLocation(const std::string &name)
+uint32_t Shader::GetUniformLocation(const std::string &name)
 {
     return glGetUniformLocation(m_program, name.c_str());
 }
 
-void GLES3Shader::SetUniformValue(uint32_t location, const float m[16])
+void Shader::SetUniformValue(uint32_t location, const float m[16])
 {
     if (location < 0)
         return;
     glUniformMatrix4fv(location, 1, GL_FALSE, m);
 }
 
-void GLES3Shader::SetUniformValue(const std::string &name, const float m[16])
+void Shader::SetUniformValue(const std::string &name, const float m[16])
 {
     auto location = GetUniformLocation(name);
     SetUniformValue(location, m);
 }
 
-void GLES3Shader::SetUniformValue(const std::string &name, int value)
+void Shader::SetUniformValue(const std::string &name, int value)
 {
     auto location = GetUniformLocation(name);
     glUniform1i(location, value);

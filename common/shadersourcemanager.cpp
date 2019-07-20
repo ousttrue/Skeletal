@@ -32,18 +32,18 @@ static std::string trim(const std::string &src)
     return std::string(it, src.end());
 }
 
-namespace skeletal::es3
+namespace skeletal
 {
 
 ShaderSourceManager ShaderSourceManager::Instance;
 
 ShaderSourceManager::ShaderSourceManager()
 {
-    skeletal::es3::ShaderSourceManager::Instance.SetSource(
+    skeletal::ShaderSourceManager::Instance.SetSource(
         skeletal::scene::ShaderType::gizmo,
         trim(g_gizmo_vs),
         trim(g_gizmo_fs));
-    skeletal::es3::ShaderSourceManager::Instance.SetSource(
+    skeletal::ShaderSourceManager::Instance.SetSource(
         skeletal::scene::ShaderType::unlit,
         trim(g_unlit_vs),
         trim(g_unlit_fs));
@@ -60,4 +60,4 @@ std::shared_ptr<ShaderSource> ShaderSourceManager::GetSource(scene::ShaderType s
     return found->second;
 }
 
-} // namespace skeletal::es3
+} // namespace skeletal

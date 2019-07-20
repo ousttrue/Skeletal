@@ -6,7 +6,7 @@
 
 namespace skeletal::es3 {
 
-void GLES3Material::Set()
+void Material::Set()
 {
     if (Texture)
     {

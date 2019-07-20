@@ -4,7 +4,7 @@ PROJECT(Skeletal VERSION 0.1.0)
 INCLUDE_DIRECTORIES(
     $ENV{VCPKG_DIR}/installed/x64-windows/include
     dependencies/simplegltf
-    core
+    common
     )
 LINK_DIRECTORIES($ENV{VCPKG_DIR}/installed/x64-windows/lib)
 ADD_DEFINITIONS(

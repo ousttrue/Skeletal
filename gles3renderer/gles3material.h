@@ -5,16 +5,16 @@
 namespace skeletal::es3
 {
 
-class GLES3Shader;
-class GLES3Texture;
-class GLES3Material
+class Shader;
+class Texture;
+class Material
 {
 public:
-    std::shared_ptr<GLES3Shader> Shader;
+    std::shared_ptr<Shader> Shader;
 
     glm::vec4 Color = glm::vec4(1, 1, 1, 1);
 
-    std::shared_ptr<GLES3Texture> Texture;
+    std::shared_ptr<Texture> Texture;
 
     void Set();
 };

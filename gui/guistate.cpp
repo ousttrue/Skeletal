@@ -94,7 +94,7 @@ struct NodeTreeDrawer
 };
 static NodeTreeDrawer m_tree;
 
-void GuiState::Update(skeletal::scene::Scene *scene, skeletal::es3::GLES3Renderer *renderer)
+void GuiState::Update(skeletal::scene::Scene *scene, skeletal::es3::Renderer *renderer)
 {
     ////////////////////////////////////////////////////////////
 

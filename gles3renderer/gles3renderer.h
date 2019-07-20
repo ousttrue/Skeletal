@@ -13,14 +13,14 @@ struct CameraState;
 namespace skeletal::es3
 {
 
-struct GLES3RendererImpl;
-class GLES3Renderer
+struct RendererImpl;
+class Renderer
 {
-    GLES3RendererImpl *m_impl;
+    RendererImpl *m_impl;
 
 public:
-    GLES3Renderer();
-    ~GLES3Renderer();
+    Renderer();
+    ~Renderer();
 
     // draw to render target, then return render target
     void Begin(const camera::CameraState *pInfo, skeletal::scene::Scene *pScene);

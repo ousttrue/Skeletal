@@ -7,12 +7,12 @@
 namespace skeletal::es3
 {
 
-GLES3Texture::GLES3Texture()
+Texture::Texture()
 {
     glGenTextures(1, &m_texture);
 }
 
-GLES3Texture::~GLES3Texture()
+Texture::~Texture()
 {
     if (m_texture)
     {
@@ -21,18 +21,18 @@ GLES3Texture::~GLES3Texture()
     }
 }
 
-void GLES3Texture::Bind(int slot)
+void Texture::Bind(int slot)
 {
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, m_texture);
 }
 
-void GLES3Texture::Unbind()
+void Texture::Unbind()
 {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void GLES3Texture::SetImage(int width, int height, int channels, const std::byte *data)
+void Texture::SetImage(int width, int height, int channels, const std::byte *data)
 {
     Bind(0);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -67,58 +67,58 @@ void GLES3Texture::SetImage(int width, int height, int channels, const std::byte
 }
 
 //
-GLES3RenderBuffer::GLES3RenderBuffer()
+RenderBuffer::RenderBuffer()
 {
     glGenRenderbuffers(1, &m_renderBuffer);
 }
 
-GLES3RenderBuffer::~GLES3RenderBuffer()
+RenderBuffer::~RenderBuffer()
 {
     glDeleteRenderbuffers(1, &m_renderBuffer);
 }
 
-void GLES3RenderBuffer::ResizeDepth(int w, int h)
+void RenderBuffer::ResizeDepth(int w, int h)
 {
     Bind();
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, w, h);
     Unbind();
 }
 
-void GLES3RenderBuffer::Bind()
+void RenderBuffer::Bind()
 {
     glBindRenderbuffer(GL_RENDERBUFFER, m_renderBuffer);
 }
 
-void GLES3RenderBuffer::Unbind()
+void RenderBuffer::Unbind()
 {
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
 //
-GLES3FrameBufferObject::GLES3FrameBufferObject()
+FrameBufferObject::FrameBufferObject()
 {
     glGenFramebuffers(1, &m_fbo);
 
-    m_depth = std::make_shared<GLES3RenderBuffer>();
-    m_texture = std::make_shared<GLES3Texture>();
+    m_depth = std::make_shared<RenderBuffer>();
+    m_texture = std::make_shared<Texture>();
 }
 
-GLES3FrameBufferObject::~GLES3FrameBufferObject()
+FrameBufferObject::~FrameBufferObject()
 {
     glDeleteFramebuffers(1, &m_fbo);
 }
 
-void GLES3FrameBufferObject::Bind()
+void FrameBufferObject::Bind()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 }
 
-void GLES3FrameBufferObject::Unbind()
+void FrameBufferObject::Unbind()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GLES3FrameBufferObject::Resize(int width, int height)
+void FrameBufferObject::Resize(int width, int height)
 {
     if (width == m_width && height == m_height)
     {
