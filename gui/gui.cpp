@@ -160,7 +160,7 @@ class GUIImpl
 
     GuiState m_guiState;
     plog::ImGuiAppender<plog::TxtFormatter> m_appender;
-    skeletal::dx11::Renderer m_renderer;
+    skeletal::dx11::ResourceManager m_resourceManager;
     // Im3dGui m_im3d;
     // OrbitCamera m_camera;
     DX11View m_view;
@@ -238,7 +238,7 @@ public:
                     .Wheel = mouse.Wheel,
                     .Buttons = mouse.Buttons}};
 
-            auto texture = m_view.Draw(deviceContext, viewState);
+            auto texture = m_view.Draw(deviceContext, viewState, scene, &m_resourceManager);
 
             // show render target
             ImGui::ImageButton(texture, size, ImVec2(0, 0), ImVec2(1, 1), 0);
@@ -268,7 +268,7 @@ public:
             // ImGui::End();
         }
 
-        m_guiState.Update(scene, &m_renderer);
+        m_guiState.Update(scene, &m_resourceManager);
     }
 
     void End()

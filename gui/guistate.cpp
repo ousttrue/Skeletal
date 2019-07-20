@@ -94,7 +94,7 @@ struct NodeTreeDrawer
 };
 static NodeTreeDrawer m_tree;
 
-void GuiState::Update(skeletal::scene::Scene *scene, skeletal::dx11::Renderer *renderer)
+void GuiState::Update(skeletal::scene::Scene *scene, skeletal::dx11::ResourceManager *resourceManager)
 {
     ////////////////////////////////////////////////////////////
 
@@ -150,7 +150,7 @@ void GuiState::Update(skeletal::scene::Scene *scene, skeletal::dx11::Renderer *r
                     if (isOpen)
                     {
                         // draw image
-                        ImGui::Image(renderer->GetTexture(texture->GetID()), ImVec2(100, 100));
+                        ImGui::Image(resourceManager->GetTexture(texture->GetID()), ImVec2(100, 100));
                         ImGui::TreePop();
                     }
                     ImGui::PopID();

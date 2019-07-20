@@ -14,14 +14,14 @@ class Scene;
 namespace skeletal::dx11
 {
 
-class RendererImpl;
-class Renderer
+class ResourceManagerImpl;
+class ResourceManager
 {
-    RendererImpl *m_impl = nullptr;
+    ResourceManagerImpl *m_impl = nullptr;
 
 public:
-    Renderer();
-    ~Renderer();
+    ResourceManager();
+    ~ResourceManager();
 
     // draw to render target,
     void Begin(const camera::CameraState *pInfo, skeletal::scene::Scene *pScene);

@@ -8,7 +8,7 @@ class Scene;
 
 namespace skeletal::dx11
 {
-class Renderer;
+class ResourceManager;
 } // namespace skeletal::dx11
 
 struct GuiState
@@ -19,5 +19,5 @@ struct GuiState
     std::string logger;
 
     void Update(skeletal::scene::Scene *scene,
-                skeletal::dx11::Renderer *renderer);
+                skeletal::dx11::ResourceManager *resourceManager);
 };
