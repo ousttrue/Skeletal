@@ -1,10 +1,7 @@
 #pragma once
 #include "material.h"
 
-
-namespace agv
-{
-namespace renderer
+namespace agv::renderer
 {
 
 struct ShaderSource
@@ -48,5 +45,4 @@ public:
     static ShaderSourceManager Instance;
 };
 
-} // namespace renderer
-} // namespace agv
+} // namespace agv::renderer

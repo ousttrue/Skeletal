@@ -2,9 +2,7 @@
 #include <memory>
 #include <glm/glm.hpp>
 
-namespace agv
-{
-namespace renderer
+namespace agv::renderer
 {
 
 class GLES3Shader;
@@ -21,5 +19,4 @@ public:
     void Set();
 };
 
-} // namespace renderer
-} // namespace agv
+} // namespace agv::renderer

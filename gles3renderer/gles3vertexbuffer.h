@@ -6,10 +6,9 @@
 #include <string>
 #include <simplegltf/simplegltf.h>
 
-namespace agv
+namespace agv::renderer
 {
-namespace renderer
-{
+
 class GLES3VertexBuffer
 {
     bool m_isIndex = false;
@@ -64,9 +63,9 @@ public:
     GLES3VertexArray();
     ~GLES3VertexArray();
     void BindSlot(int slot, const std::shared_ptr<GLES3VertexBuffer> &vbo);
-	void UnbindSlot(int slot);
+    void UnbindSlot(int slot);
     void Bind();
     static void Unbind();
 };
-} // namespace renderer
-} // namespace agv
+
+} // namespace agv::renderer

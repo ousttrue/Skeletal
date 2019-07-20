@@ -3,9 +3,7 @@
 #include <cstddef>
 #include <memory>
 
-namespace agv
-{
-namespace renderer
+namespace agv::renderer
 {
 
 class GLES3Texture
@@ -51,5 +49,4 @@ public:
     void Resize(int w, int h);
 };
 
-} // namespace renderer
-} // namespace agv
+} // namespace agv::renderer

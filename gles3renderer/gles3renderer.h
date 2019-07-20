@@ -7,12 +7,12 @@
 
 namespace camera
 {
-    struct CameraState;
-};
-namespace agv
+struct CameraState;
+}
+
+namespace agv::renderer
 {
-namespace renderer
-{
+
 struct GLES3RendererImpl;
 class GLES3Renderer
 {
@@ -32,5 +32,4 @@ private:
     void DrawNode(const camera::CameraState *pInfo, const agv::scene::Node *pNode);
     void DrawModel(const camera::CameraState *pInfo, const agv::scene::Model *pModel);
 };
-} // namespace renderer
-} // namespace agv
+} // namespace agv::renderer

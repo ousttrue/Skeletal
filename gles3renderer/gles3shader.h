@@ -4,10 +4,9 @@
 #include <unordered_map>
 #include "dxm.h"
 
-namespace agv
+namespace agv::renderer
 {
-namespace renderer
-{
+
 class GLES3Shader
 {
     uint32_t m_program = 0;
@@ -27,5 +26,5 @@ public:
 
     void Use();
 };
-} // namespace renderer
-} // namespace agv
+
+} // namespace agv::renderer
