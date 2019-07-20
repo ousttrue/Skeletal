@@ -15,6 +15,5 @@ public:
     Win32Window();
     ~Win32Window();
     void* Create(int w, int h, const wchar_t *title);
-    bool IsRunning();
-    const WindowState &GetState() const;
+    const WindowState *GetState() const;
 };

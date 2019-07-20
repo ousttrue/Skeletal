@@ -29,8 +29,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    skeletal::gui::GUI gui;
-
     Win32Window window;
     auto hwnd = window.Create(CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_NAME);
     if (!hwnd)
@@ -58,27 +56,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         scene.Load(SjisToUnicode(__argv[1]));
     }
 
-    float startTime = 0;
-    float lastTime = 0;
-    while (window.IsRunning())
+    skeletal::gui::GUI gui;
+    while (true)
     {
         // update
-        auto &windowState = window.GetState();
-        scene.Update(windowState.DeltaSeconds);
-
-        // build and rendertarget
-        gui.Update(hwnd, device, deviceContext, &windowState, &scene);
-
+        auto windowState = window.GetState();
+        if (!windowState)
         {
-            // render to backbuffer
-            dx11.NewFrame(windowState.Width, windowState.Height);
-
-            // imgui Rendering
-            gui.Render();
-
-            // transfer backbuffer
-            dx11.Present();
+            break;
         }
+        scene.Update(windowState->DeltaSeconds);
+
+        // create gui drawlist and draw 3D view to rendertarget
+        gui.Update(hwnd, device, deviceContext, windowState, &scene);
+
+        // get backbuffer
+        dx11.NewFrame(windowState->Width, windowState->Height);
+        // render to backbuffer
+        gui.Render();
+        // transfer backbuffer
+        dx11.Present();
     }
 
     return 0;

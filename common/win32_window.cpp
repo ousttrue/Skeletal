@@ -59,7 +59,7 @@ public:
         m_state.Mouse.Wheel = d;
         m_clearWheel = false;
     }
-    bool IsRunning()
+    bool IsRunning() const
     {
         MSG msg;
         while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
@@ -76,8 +76,13 @@ public:
     }
     mutable DWORD m_startTime = 0;
     mutable DWORD m_lastTime = 0;
-    const WindowState &GetState() const
+    const WindowState *GetState() const
     {
+        if (!IsRunning())
+        {
+            return nullptr;
+        }
+
         if (m_clearWheel)
         {
             m_state.Mouse.Wheel = 0;
@@ -96,7 +101,7 @@ public:
         m_state.DeltaSeconds = delta * 0.001f;
 
         m_clearWheel = true;
-        return m_state;
+        return &m_state;
     }
     WindowState &GetStateInternal()
     {
@@ -264,12 +269,7 @@ void *Win32Window::Create(int w, int h, const wchar_t *title)
     return hWnd;
 }
 
-bool Win32Window::IsRunning()
-{
-    return m_impl->IsRunning();
-}
-
-const WindowState &Win32Window::GetState() const
+const WindowState *Win32Window::GetState() const
 {
     return m_impl->GetState();
 }
