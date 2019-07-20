@@ -1,7 +1,6 @@
 #pragma once
 #include <nlohmann/json.hpp>
 #include <fstream>
-const auto CONFIG_FILE = L"Skeletal.json";
 
 namespace windowplacement
 {
@@ -122,9 +121,9 @@ inline std::string read_allstring(const std::wstring &path)
     return buffer;
 }
 
-inline void Restore(HWND hWnd, UINT showCmd)
+inline void Restore(HWND hWnd, UINT showCmd, const wchar_t *config_file)
 {
-    auto config_str = read_allstring(CONFIG_FILE);
+    auto config_str = read_allstring(config_file);
     if (config_str.empty())
     {
         ShowWindow(hWnd, showCmd);
@@ -138,13 +137,13 @@ inline void Restore(HWND hWnd, UINT showCmd)
     }
 }
 
-inline void Save(HWND hWnd)
+inline void Save(HWND hWnd, const wchar_t *config_file)
 {
     Configuration config;
     if (GetWindowPlacement(hWnd, &config.window))
     {
         nlohmann::json config_json = config;
-        std::ofstream config_file(CONFIG_FILE);
+        std::ofstream config_file(config_file);
         config_file << config_json.dump(4);
     }
 }

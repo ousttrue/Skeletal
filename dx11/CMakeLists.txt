@@ -7,7 +7,6 @@ FILE(GLOB SRC
 
 ADD_LIBRARY(${SUB_NAME} 
     ${SRC}
-	${CMAKE_CURRENT_LIST_DIR}/../common/shadersourcemanager.cpp
 	)
 
 TARGET_COMPILE_DEFINITIONS(${SUB_NAME} PUBLIC
@@ -17,8 +16,4 @@ TARGET_COMPILE_DEFINITIONS(${SUB_NAME} PUBLIC
 
 TARGET_INCLUDE_DIRECTORIES(${SUB_NAME} PUBLIC
     ../scene
-    ../plog/include
-    ../glm
-	${CMAKE_INSTALL_PREFIX}/include
 	)
-

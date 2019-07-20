@@ -32,11 +32,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     skeletal::gui::GUI gui;
 
     Win32Window window;
-    if (!window.Create(CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_NAME))
+    auto hwnd = window.Create(CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_NAME);
+    if (!hwnd)
     {
         return 1;
     }
-    auto hwnd = (HWND)window.GetState().Handle;
     LOGD << "CreateWindow";
 
     DX11Context dx11;
@@ -63,23 +63,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     while (window.IsRunning())
     {
         // update
-        auto now = window.GetTimeSeconds();
-        auto delta = now - lastTime;
-        lastTime = now;
-        if (startTime == 0)
+        auto &windowState = window.GetState();
+        scene.Update(windowState.DeltaSeconds);
+
+        // build and rendertarget
+        gui.Update(hwnd, device, deviceContext, &windowState, &scene);
+
         {
-            startTime = lastTime;
+            // render to backbuffer
+            dx11.NewFrame(windowState.Width, windowState.Height);
+
+            // imgui Rendering
+            gui.Render();
+
+            // transfer backbuffer
+            dx11.Present();
         }
-        scene.Update(now - startTime);
-
-        auto state = window.GetState();
-
-        dx11.NewFrame(state.Width, state.Height);
-
-        // rendering
-        gui.Draw(device, deviceContext, &state, delta, &scene);
-
-        dx11.Present();
     }
 
     return 0;

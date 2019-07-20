@@ -16,6 +16,7 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC
     ../dependencies/simplegltf
     )
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}
+    common
     scene
     dx11
     gui

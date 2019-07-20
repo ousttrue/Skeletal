@@ -40,6 +40,7 @@ TARGET_INCLUDE_DIRECTORIES(${SUB_NAME} PUBLIC
     ../dependencies/imgui
     ../dependencies/ImGuizmo
     ../dependencies/im3d
+    ../dependencies/im3d/examples/common
     ../scene
     ../dx11
 	)

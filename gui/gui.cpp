@@ -1,16 +1,17 @@
 #include "gui.h"
 #include "window_state.h"
 #include "guistate.h"
-#include "orbit_camera.h"
+// #include "orbit_camera.h"
 // #include "im3d_gui.h"
 #include <imgui.h>
 #include <examples/imgui_impl_dx11.h>
 #include <examples/imgui_impl_win32.h>
 #include <exception>
 #include <dx11.h>
+#include "dx11_view.h"
 #include <scene.h>
-#include <ImGuizmo.h>
-#include <imgui_internal.h>
+// #include <ImGuizmo.h>
+// #include <imgui_internal.h>
 #include <plog/Log.h>
 
 const char *glsl_version = "#version 300 es";
@@ -161,7 +162,8 @@ class GUIImpl
     plog::ImGuiAppender<plog::TxtFormatter> m_appender;
     skeletal::dx11::Renderer m_renderer;
     // Im3dGui m_im3d;
-    OrbitCamera m_camera;
+    // OrbitCamera m_camera;
+    DX11View m_view;
 
 public:
     GUIImpl(void *hWnd, ID3D11Device *device, ID3D11DeviceContext *deviceContext)
@@ -192,7 +194,7 @@ public:
         ImGui::DestroyContext();
     }
 
-    void Begin(const WindowState *state, float deltaSeconds, scene::Scene *scene)
+    void Begin(void *deviceContext, const WindowState &windowState, scene::Scene *scene)
     {
         // Start the Dear ImGui frame
         // ImGui_ImplOpenGL3_NewFrame();
@@ -201,63 +203,43 @@ public:
 
         ImGuiIO &io = ImGui::GetIO();
         IM_ASSERT(io.Fonts->IsBuilt());
-        io.DeltaTime = deltaSeconds > 0 ? deltaSeconds : 0.001f;
+        io.DeltaTime = windowState.DeltaSeconds > 0 ? windowState.DeltaSeconds : 0.001f;
 
-        io.MouseDown[0] = state->Mouse.IsDown(ButtonFlags::Left);
-        io.MouseDown[1] = state->Mouse.IsDown(ButtonFlags::Right);
-        io.MouseDown[2] = state->Mouse.IsDown(ButtonFlags::Middle);
-        io.MouseWheel = static_cast<float>(state->Mouse.Wheel);
+        auto &mouse = windowState.Mouse;
+        io.MouseDown[0] = mouse.IsDown(ButtonFlags::Left);
+        io.MouseDown[1] = mouse.IsDown(ButtonFlags::Right);
+        io.MouseDown[2] = mouse.IsDown(ButtonFlags::Middle);
+        io.MouseWheel = static_cast<float>(mouse.Wheel);
 
         ImGui::NewFrame();
 
-        // widgets...
-        Dockspace();
+        ////////////////////////////////////////////////////////////
 
-        ImVec2 pos;
-        ImVec2 size;
+        Dockspace();
 
         // render centrarl wigets
         if (ImGui::Begin("3DView", &m_openView,
                          ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
         {
-            // transfer MouseEvents
-            auto &io = ImGui::GetIO();
-            auto size = ImGui::GetWindowSize();
-            m_camera.SetScreenSize(size.x, size.y);
+            auto size = ImGui::GetContentRegionAvail();
+            auto pos = ImGui::GetWindowPos();
+            auto frameHeight = ImGui::GetFrameHeight();
 
-            auto mouse = state->Mouse;
-            auto mousePos = ImGui::GetMousePos();
-            mouse.X = (int)mousePos.x;
-            mouse.Y = (int)mousePos.y;
-            m_camera.MouseInput(mouse);
+            WindowState viewState{
+                .Width = (int)size.x,
+                .Height = (int)size.y,
+                .ElapsedSeconds = windowState.ElapsedSeconds,
+                .DeltaSeconds = windowState.DeltaSeconds,
+                .Mouse = {
+                    .X = mouse.X - (int)pos.x,
+                    .Y = mouse.Y - (int)pos.y - (int)frameHeight,
+                    .Wheel = mouse.Wheel,
+                    .Buttons = mouse.Buttons}};
 
-            //
-            // draw
-            //
-            auto firstSelection = scene->m_selection.begin();
-            // if (firstSelection != scene->m_selection.end())
-            // {
-            //     auto selection = firstSelection->second;
-            //     // gizmo manipulate(not draw)
-            //     m_im3d.NewFrame(&m_camera.state, &mouse, deltaSeconds);
-            //     auto model = selection->GetWorldMatrix().array();
-            //     m_im3d.Manipulate(model.data());
-            //     selection->SetWorldMatrix(model);
-            // }
+            auto texture = m_view.Draw(deviceContext, viewState);
 
-            // render and get rendertarget
-            m_renderer.Begin(&m_camera.state, scene);
-
-            // if (firstSelection != scene->m_selection.end())
-            // {
-            //     // gizmo draw
-            //     m_im3d.Draw(m_camera.state.viewProjection.data());
-            // }
-
-            auto result = m_renderer.End(&m_camera.state);
-
-            // show render target. vertical flip
-            ImGui::Image(result, size, ImVec2(0, 1), ImVec2(1, 0));
+            // show render target
+            ImGui::ImageButton(texture, size, ImVec2(0, 0), ImVec2(1, 1), 0);
         }
         ImGui::End();
 
@@ -267,20 +249,20 @@ public:
             auto selection = firstSelection->second;
             // gizmo
             // auto &info = scene->GetCamera()->GetRenderTargetInfo();
-            ImGuizmo::BeginFrame();
-            if (ImGui::Begin("selected"))
-            {
-                auto model = selection->GetWorldMatrix();
-                // ShowGui(&model);
-                float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-                ImGuizmo::DecomposeMatrixToComponents(model.data(), matrixTranslation, matrixRotation, matrixScale);
-                ImGui::InputFloat3("Tr", matrixTranslation, 3);
-                ImGui::InputFloat3("Rt", matrixRotation, 3);
-                ImGui::InputFloat3("Sc", matrixScale, 3);
-                ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, model.data());
-                selection->SetWorldMatrix(model);
-            }
-            ImGui::End();
+            // ImGuizmo::BeginFrame();
+            // if (ImGui::Begin("selected"))
+            // {
+            //     auto model = selection->GetWorldMatrix();
+            //     // ShowGui(&model);
+            //     float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+            //     ImGuizmo::DecomposeMatrixToComponents(model.data(), matrixTranslation, matrixRotation, matrixScale);
+            //     ImGui::InputFloat3("Tr", matrixTranslation, 3);
+            //     ImGui::InputFloat3("Rt", matrixRotation, 3);
+            //     ImGui::InputFloat3("Sc", matrixScale, 3);
+            //     ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, model.data());
+            //     selection->SetWorldMatrix(model);
+            // }
+            // ImGui::End();
         }
 
         m_guiState.Update(scene, &m_renderer);
@@ -306,15 +288,19 @@ GUI::~GUI()
     }
 }
 
-void GUI::Draw(void *device, void *deviceContext,
-               const WindowState *state,
-               float deltaSeconds, skeletal::scene::Scene *scene)
+void GUI::Update(void *hwnd, void *device, void *deviceContext,
+                 const WindowState *windowState,
+                 skeletal::scene::Scene *scene)
 {
     if (!m_impl)
     {
-        m_impl = new GUIImpl(state->Handle, (ID3D11Device *)device, (ID3D11DeviceContext *)deviceContext);
+        m_impl = new GUIImpl(hwnd, (ID3D11Device *)device, (ID3D11DeviceContext *)deviceContext);
     }
-    m_impl->Begin(state, deltaSeconds, scene);
+    m_impl->Begin(deviceContext, *windowState, scene);
+}
+
+void GUI::Render()
+{
     m_impl->End();
 }
 

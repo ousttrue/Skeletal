@@ -3,6 +3,7 @@
 #include <windowsx.h> // GET_X_LPARAM macros
 #include "save_windowplacement.h"
 #include <assert.h>
+#include <plog/Log.h>
 
 static LRESULT CALLBACK WindowProc(HWND _hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 class Win32WindowImpl *g_window = nullptr;
@@ -33,9 +34,10 @@ class Win32WindowImpl
     mutable WindowState m_state = {0};
 
 public:
-    Win32WindowImpl(HWND hWnd)
+    std::wstring m_configName;
+    Win32WindowImpl(HWND hWnd, const std::wstring &name)
     {
-        m_state.Handle = hWnd;
+        m_configName = name + L".json";
         assert(g_window == nullptr);
         g_window = this;
 
@@ -72,11 +74,27 @@ public:
         }
         return true;
     }
+    mutable DWORD m_startTime = 0;
+    mutable DWORD m_lastTime = 0;
     const WindowState &GetState() const
     {
-        if(m_clearWheel){
+        if (m_clearWheel)
+        {
             m_state.Mouse.Wheel = 0;
         }
+
+        auto now = timeGetTime();
+        if (m_startTime == 0)
+        {
+            m_startTime = now;
+            m_lastTime = now;
+        }
+        auto elapsed = now - m_startTime;
+        auto delta = now - m_lastTime;
+        m_lastTime = now;
+        m_state.ElapsedSeconds = elapsed * 0.001f;
+        m_state.DeltaSeconds = delta * 0.001f;
+
         m_clearWheel = true;
         return m_state;
     }
@@ -92,7 +110,7 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     {
     case WM_DESTROY:
     {
-        windowplacement::Save(hWnd);
+        windowplacement::Save(hWnd, g_window->m_configName.c_str());
         // PostQuitMessage(0);
         return 0;
     }
@@ -139,6 +157,7 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     case WM_LBUTTONDOWN:
     {
         auto &state = g_window->GetStateInternal();
+        SetCapture(hWnd);
         state.Mouse.Down(ButtonFlags::Left);
         return 0;
     }
@@ -147,12 +166,17 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     {
         auto &state = g_window->GetStateInternal();
         state.Mouse.Up(ButtonFlags::Left);
+        if (state.Mouse.Buttons == ButtonFlags::None)
+        {
+            ReleaseCapture();
+        }
         return 0;
     }
 
     case WM_MBUTTONDOWN:
     {
         auto &state = g_window->GetStateInternal();
+        SetCapture(hWnd);
         state.Mouse.Down(ButtonFlags::Middle);
         return 0;
     }
@@ -161,12 +185,17 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     {
         auto &state = g_window->GetStateInternal();
         state.Mouse.Up(ButtonFlags::Middle);
+        if (state.Mouse.Buttons == ButtonFlags::None)
+        {
+            ReleaseCapture();
+        }
         return 0;
     }
 
     case WM_RBUTTONDOWN:
     {
         auto &state = g_window->GetStateInternal();
+        SetCapture(hWnd);
         state.Mouse.Down(ButtonFlags::Right);
         return 0;
     }
@@ -175,6 +204,10 @@ static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     {
         auto &state = g_window->GetStateInternal();
         state.Mouse.Up(ButtonFlags::Right);
+        if (state.Mouse.Buttons == ButtonFlags::None)
+        {
+            ReleaseCapture();
+        }
         return 0;
     }
 
@@ -204,7 +237,7 @@ Win32Window::~Win32Window()
     }
 }
 
-bool Win32Window::Create(int w, int h, const wchar_t *title)
+void *Win32Window::Create(int w, int h, const wchar_t *title)
 {
     auto hInstance = GetModuleHandle(0);
     auto wndClass = GetOrRegisterWindowClass(hInstance, L"Win32WindowImpl");
@@ -221,14 +254,14 @@ bool Win32Window::Create(int w, int h, const wchar_t *title)
         this);
     if (hWnd == NULL)
     {
-        return false;
+        return nullptr;
     }
-    m_impl = new Win32WindowImpl(hWnd);
+    m_impl = new Win32WindowImpl(hWnd, title);
     // ShowWindow(hWnd, SW_SHOW);
 
-    windowplacement::Restore(hWnd, SW_SHOWNORMAL);
+    windowplacement::Restore(hWnd, SW_SHOWNORMAL, m_impl->m_configName.c_str());
 
-    return true;
+    return hWnd;
 }
 
 bool Win32Window::IsRunning()
@@ -239,9 +272,4 @@ bool Win32Window::IsRunning()
 const WindowState &Win32Window::GetState() const
 {
     return m_impl->GetState();
-}
-
-float Win32Window::GetTimeSeconds() const
-{
-    return timeGetTime() * 0.001f;
 }

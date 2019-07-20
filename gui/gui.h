@@ -2,11 +2,6 @@
 
 struct WindowState;
 
-namespace skeletal::es3
-{
-class Renderer;
-}
-
 namespace skeletal::scene
 {
 class Scene;
@@ -23,9 +18,11 @@ public:
     GUI();
     ~GUI();
 
-    void Draw(void *device, void *deviceContext,
-        const WindowState *state, float deltaSeconds,
+    void Update(void *hwnd, void *device, void *deviceContext,
+        const WindowState *windowState,
         skeletal::scene::Scene *scene);
+
+    void Render();
 };
 
 } // namespace skeletal::gui
