@@ -4,9 +4,7 @@
 #include "dxm.h"
 #include <memory>
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 
 class MeshGroup;
@@ -116,5 +114,4 @@ public:
                                       const simplegltf::GltfNode &gltfNode);
 };
 
-} // namespace scene
-} // namespace agv
+} // namespace skeletal::scene

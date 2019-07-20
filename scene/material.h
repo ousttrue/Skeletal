@@ -1,9 +1,7 @@
 #pragma once
 #include "objectbase.h"
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 
 enum class ShaderType
@@ -30,5 +28,4 @@ public:
                                           const std::vector<std::shared_ptr<Texture>> &textures);
 };
 
-} // namespace scene
-} // namespace agv
+} // namespace skeletal::scene

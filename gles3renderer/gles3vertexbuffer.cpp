@@ -3,9 +3,7 @@
 #include <GLES3/gl3.h>
 #include <assert.h>
 
-namespace agv
-{
-namespace renderer
+namespace skeletal::es3
 {
 ///
 /// GLES3VertexBuffer
@@ -161,5 +159,4 @@ void GLES3VertexArray::UnbindSlot(int slot)
     glDisableVertexAttribArray(slot);
 }
 
-} // namespace renderer
-} // namespace agv
+} // namespace skeletal::es3

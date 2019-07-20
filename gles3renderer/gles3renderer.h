@@ -10,7 +10,7 @@ namespace camera
 struct CameraState;
 }
 
-namespace agv::renderer
+namespace skeletal::es3
 {
 
 struct GLES3RendererImpl;
@@ -23,13 +23,14 @@ public:
     ~GLES3Renderer();
 
     // draw to render target, then return render target
-    void Begin(const camera::CameraState *pInfo, agv::scene::Scene *pScene);
+    void Begin(const camera::CameraState *pInfo, skeletal::scene::Scene *pScene);
     void *End(const camera::CameraState *pInfo);
 
     void *GetTexture(uint32_t id) const;
 
 private:
-    void DrawNode(const camera::CameraState *pInfo, const agv::scene::Node *pNode);
-    void DrawModel(const camera::CameraState *pInfo, const agv::scene::Model *pModel);
+    void DrawNode(const camera::CameraState *pInfo, const skeletal::scene::Node *pNode);
+    void DrawModel(const camera::CameraState *pInfo, const skeletal::scene::Model *pModel);
 };
-} // namespace agv::renderer
+
+} // namespace skeletal::es3

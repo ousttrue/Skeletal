@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include "dxm.h"
 
-namespace agv::renderer
+namespace skeletal::es3
 {
 
 class GLES3Shader
@@ -27,4 +27,4 @@ public:
     void Use();
 };
 
-} // namespace agv::renderer
+} // namespace skeletal::es3

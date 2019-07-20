@@ -1,20 +1,18 @@
 #pragma once
 
 struct WindowState;
-namespace agv
-{
 
-namespace renderer
+namespace skeletal::es3
 {
 class GLES3Renderer;
 }
 
-namespace scene
+namespace skeletal::scene
 {
 class Scene;
 }
 
-namespace gui
+namespace skeletal::gui
 {
 class GUIImpl;
 class GUI
@@ -26,8 +24,7 @@ public:
     ~GUI();
 
     void Draw(const WindowState *state, float deltaSeconds,
-               agv::scene::Scene *scene);
+              skeletal::scene::Scene *scene);
 };
 
-} // namespace gui
-} // namespace agv
+} // namespace skeletal::gui

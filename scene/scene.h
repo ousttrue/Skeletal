@@ -6,9 +6,7 @@
 #include "model.h"
 #include "texture.h"
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 class GLTFLoader;
 class Scene
@@ -56,7 +54,7 @@ public:
     void CreateDefaultScene();
     void Load(const std::wstring &path);
 
-    std::unordered_map<uint32_t, std::shared_ptr<agv::scene::Node>> m_selection;
+    std::unordered_map<uint32_t, std::shared_ptr<skeletal::scene::Node>> m_selection;
 
     void Select(const std::shared_ptr<Node> &node)
     {
@@ -73,5 +71,5 @@ public:
         m_selection.clear();
     }
 };
-} // namespace scene
-} // namespace agv
+
+} // namespace skeletal::scene

@@ -1,18 +1,17 @@
 #pragma
 #include <string>
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 class Scene;
-}
-namespace renderer
-{
-class GLES3Renderer;
+
 }
 
-} // namespace agv
+namespace skeletal::es3
+{
+class GLES3Renderer;
+
+} // namespace skeletal::es3
 
 struct GuiState
 {
@@ -21,6 +20,6 @@ struct GuiState
     bool modelOpen = true;
     std::string logger;
 
-    void Update(agv::scene::Scene *scene,
-                agv::renderer::GLES3Renderer *renderer);
+    void Update(skeletal::scene::Scene *scene,
+                skeletal::es3::GLES3Renderer *renderer);
 };

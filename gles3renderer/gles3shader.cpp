@@ -40,9 +40,7 @@ static GLuint LoadShader(GLenum type, const char *shaderSrc)
     return shader;
 }
 
-namespace agv
-{
-namespace renderer
+namespace skeletal::es3
 {
 GLES3Shader::GLES3Shader(GLuint program) : m_program(program)
 {
@@ -173,5 +171,4 @@ void GLES3Shader::SetUniformValue(const std::string &name, int value)
     glUniform1i(location, value);
 }
 
-} // namespace renderer
-} // namespace agv
+} // namespace skeletal::es3

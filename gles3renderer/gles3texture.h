@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <memory>
 
-namespace agv::renderer
+namespace skeletal::es3
 {
 
 class GLES3Texture
@@ -49,4 +49,4 @@ public:
     void Resize(int w, int h);
 };
 
-} // namespace agv::renderer
+} // namespace skeletal::es3

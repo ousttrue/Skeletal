@@ -36,9 +36,9 @@ static std::wstring OpenDialog()
 struct NodeTreeDrawer
 {
     // int selection_mask = (1 << 2); // Dumb representation of what may be user-side selection state. You may carry selection state inside or outside your objects in whatever format you see fit.
-    std::shared_ptr<agv::scene::Node> m_clicked;
+    std::shared_ptr<skeletal::scene::Node> m_clicked;
 
-    void DrawRecursive(const agv::scene::Scene *pScene, const std::shared_ptr<agv::scene::Node> &node)
+    void DrawRecursive(const skeletal::scene::Scene *pScene, const std::shared_ptr<skeletal::scene::Node> &node)
     {
         // Disable the default open on single-click behavior and pass in Selected flag according to our selection state.
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
@@ -71,7 +71,7 @@ struct NodeTreeDrawer
     }
 
     void
-    Draw(agv::scene::Scene *pScene, const std::shared_ptr<agv::scene::Node> &node)
+    Draw(skeletal::scene::Scene *pScene, const std::shared_ptr<skeletal::scene::Node> &node)
     {
         // clear
         m_clicked = nullptr;
@@ -94,7 +94,7 @@ struct NodeTreeDrawer
 };
 static NodeTreeDrawer m_tree;
 
-void GuiState::Update(agv::scene::Scene *scene, agv::renderer::GLES3Renderer *renderer)
+void GuiState::Update(skeletal::scene::Scene *scene, skeletal::es3::GLES3Renderer *renderer)
 {
     ////////////////////////////////////////////////////////////
 

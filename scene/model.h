@@ -5,10 +5,7 @@
 #include "animation_time.h"
 #include "dxm.h"
 
-
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 
 class Texture;
@@ -30,5 +27,4 @@ public:
     static std::shared_ptr<Model> Load(const simplegltf::Storage &storage);
 };
 
-} // namespace scene
-} // namespace agv
+} // namespace skeletal::scene

@@ -6,7 +6,7 @@
 #include <string>
 #include <simplegltf/simplegltf.h>
 
-namespace agv::renderer
+namespace skeletal::es3
 {
 
 class GLES3VertexBuffer
@@ -68,4 +68,4 @@ public:
     static void Unbind();
 };
 
-} // namespace agv::renderer
+} // namespace skeletal::es3

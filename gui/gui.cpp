@@ -150,9 +150,7 @@ protected:
 };
 } // namespace plog
 
-namespace agv
-{
-namespace gui
+namespace skeletal::gui
 {
 class GUIImpl
 {
@@ -161,7 +159,7 @@ class GUIImpl
 
     GuiState m_guiState;
     plog::ImGuiAppender<plog::TxtFormatter> m_appender;
-    agv::renderer::GLES3Renderer m_renderer;
+    skeletal::es3::GLES3Renderer m_renderer;
     Im3dGui m_im3d;
     OrbitCamera m_camera;
 
@@ -304,7 +302,7 @@ GUI::~GUI()
     }
 }
 
-void GUI::Draw(const WindowState *state, float deltaSeconds, agv::scene::Scene *scene)
+void GUI::Draw(const WindowState *state, float deltaSeconds, skeletal::scene::Scene *scene)
 {
     if (!m_impl)
     {
@@ -313,5 +311,5 @@ void GUI::Draw(const WindowState *state, float deltaSeconds, agv::scene::Scene *
     m_impl->Begin(state, deltaSeconds, scene);
     m_impl->End();
 }
-} // namespace gui
-} // namespace agv
+
+} // namespace skeletal::gui

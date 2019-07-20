@@ -4,10 +4,7 @@
 #define GL_GLEXT_PROTOTYPES
 #include <GLES3/gl3.h>
 
-namespace agv
-{
-namespace renderer
-{
+namespace skeletal::es3 {
 
 void GLES3Material::Set()
 {
@@ -23,5 +20,4 @@ void GLES3Material::Set()
     glDisable(GL_CULL_FACE);
 }
 
-} // namespace renderer
 } // namespace agv

@@ -3,9 +3,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 using namespace dxm;
 
@@ -117,5 +115,4 @@ std::shared_ptr<Node> Node::Load(const simplegltf::Storage &storage,
     return node;
 }
 
-} // namespace scene
-} // namespace agv
+} // namespace skeletal::scene

@@ -1,9 +1,7 @@
 #pragma once
 #include "objectbase.h"
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 
 class Texture : public ObjectBase
@@ -26,5 +24,4 @@ public:
     static std::shared_ptr<Texture> Load(const simplegltf::Storage &storage, const simplegltf::GltfTexture &gltfTexture);
 };
 
-} // namespace scene
-} // namespace agv
+} // namespace skeletal::scene

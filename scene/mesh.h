@@ -1,9 +1,7 @@
 #pragma once
 #include "objectbase.h"
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 
 class Material;
@@ -74,5 +72,4 @@ public:
     static std::shared_ptr<MeshGroup> Create(const std::shared_ptr<Mesh> &mesh);
 };
 
-} // namespace scene
-} // namespace agv
+} // namespace skeletal::scene

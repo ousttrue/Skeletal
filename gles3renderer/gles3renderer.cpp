@@ -43,9 +43,7 @@ struct StbImage
     }
 };
 
-namespace agv
-{
-namespace renderer
+namespace skeletal::es3
 {
 
 ///
@@ -54,8 +52,8 @@ namespace renderer
 struct GLES3RendererImpl
 {
     /// shader
-    std::unordered_map<agv::scene::ShaderType, std::shared_ptr<GLES3Shader>> m_shader_map;
-    std::shared_ptr<GLES3Shader> GetOrCreateShader(agv::scene::ShaderType shaderType)
+    std::unordered_map<skeletal::scene::ShaderType, std::shared_ptr<GLES3Shader>> m_shader_map;
+    std::shared_ptr<GLES3Shader> GetOrCreateShader(skeletal::scene::ShaderType shaderType)
     {
         auto found = m_shader_map.find(shaderType);
         if (found != m_shader_map.end())
@@ -85,7 +83,7 @@ struct GLES3RendererImpl
         }
         return nullptr;
     }
-    std::shared_ptr<GLES3Texture> GetOrCreateTexture(const agv::scene::Texture *pTexture)
+    std::shared_ptr<GLES3Texture> GetOrCreateTexture(const skeletal::scene::Texture *pTexture)
     {
         auto found = m_texture_map.find(pTexture->GetID());
         if (found != m_texture_map.end())
@@ -110,7 +108,7 @@ struct GLES3RendererImpl
 
     /// material
     std::unordered_map<uint32_t, std::shared_ptr<GLES3Material>> m_material_map;
-    std::shared_ptr<GLES3Material> GetOrCreateMaterial(const agv::scene::Material *pMaterial)
+    std::shared_ptr<GLES3Material> GetOrCreateMaterial(const skeletal::scene::Material *pMaterial)
     {
         auto found = m_material_map.find(pMaterial->GetID());
         if (found != m_material_map.end())
@@ -134,7 +132,7 @@ struct GLES3RendererImpl
 
     /// vertex buffer
     std::unordered_map<uint32_t, std::shared_ptr<GLES3VertexBufferGroup>> m_vertexBuffer_map;
-    std::shared_ptr<GLES3VertexBufferGroup> GetOrCreateVertexBuffer(const agv::scene::Mesh *pMesh)
+    std::shared_ptr<GLES3VertexBufferGroup> GetOrCreateVertexBuffer(const skeletal::scene::Mesh *pMesh)
     {
         {
             auto found = m_vertexBuffer_map.find(pMesh->GetID());
@@ -163,7 +161,7 @@ struct GLES3RendererImpl
 
     std::unordered_map<uint32_t, std::shared_ptr<GLES3VertexArray>> m_vertexArray_map;
     std::shared_ptr<GLES3VertexArray> GetOrCreateVertexArray(
-        const agv::scene::Submesh *pSubmesh,
+        const skeletal::scene::Submesh *pSubmesh,
         const std::shared_ptr<GLES3VertexBufferGroup> &vbo,
         const std::shared_ptr<GLES3Shader> &shader)
     {
@@ -233,7 +231,7 @@ GLES3Renderer::~GLES3Renderer()
     delete m_impl;
 }
 
-void GLES3Renderer::DrawNode(const camera::CameraState *info, const agv::scene::Node *node)
+void GLES3Renderer::DrawNode(const camera::CameraState *info, const skeletal::scene::Node *node)
 {
     auto &meshGroup = node->MeshGroup;
     if (meshGroup)
@@ -274,7 +272,7 @@ void GLES3Renderer::DrawNode(const camera::CameraState *info, const agv::scene::
     }
 }
 
-void GLES3Renderer::Begin(const camera::CameraState *pInfo, agv::scene::Scene *pScene)
+void GLES3Renderer::Begin(const camera::CameraState *pInfo, skeletal::scene::Scene *pScene)
 {
     // auto &vp = pInfo->Viewport;
     // auto &clear = pInfo->ClearColor.Value;
@@ -318,7 +316,7 @@ void *GLES3Renderer::End(const camera::CameraState *pInfo)
 }
 
 void GLES3Renderer::DrawModel(const camera::CameraState *pInfo,
-                              const agv::scene::Model *pModel)
+                              const skeletal::scene::Model *pModel)
 {
     for (auto &node : pModel->Nodes)
     {
@@ -331,5 +329,4 @@ void *GLES3Renderer::GetTexture(uint32_t id) const
     return m_impl->GetTexture(id);
 }
 
-} // namespace renderer
-} // namespace agv
+} // namespace skeletal::es3

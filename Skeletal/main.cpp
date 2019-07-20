@@ -28,7 +28,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    agv::gui::GUI gui;
+    skeletal::gui::GUI gui;
 
     Win32Window window;
     if(!window.Create(CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_NAME))
@@ -41,7 +41,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     EglApp app(hwnd);
     LOGD << "egl initialized";
 
-    agv::scene::Scene scene;
+    skeletal::scene::Scene scene;
     if (__argc == 1)
     {
         scene.CreateDefaultScene();

@@ -2,9 +2,7 @@
 #include <plog/Log.h>
 #include <glm/glm.hpp>
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 void Mesh::WholeSubmesh(const std::shared_ptr<Material> &material)
 {
@@ -149,5 +147,4 @@ std::shared_ptr<MeshGroup> MeshGroup::Create(const std::shared_ptr<Mesh> &mesh)
     return meshGroup;
 }
 
-} // namespace scene
-} // namespace agv
+} // namespace skeletal::scene

@@ -4,9 +4,7 @@
 #include <exception>
 #include <array>
 
-namespace agv
-{
-namespace renderer
+namespace skeletal::es3
 {
 
 GLES3Texture::GLES3Texture()
@@ -149,5 +147,4 @@ void GLES3FrameBufferObject::Resize(int width, int height)
     m_depth->Unbind();
 }
 
-} // namespace renderer
-} // namespace agv
+} // namespace skeletal::es3

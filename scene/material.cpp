@@ -1,9 +1,7 @@
 #include "material.h"
 #include "texture.h"
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 
 std::shared_ptr<Material> Material::Load(const simplegltf::Storage &storage,
@@ -23,5 +21,4 @@ std::shared_ptr<Material> Material::Load(const simplegltf::Storage &storage,
     return material;
 }
 
-} // namespace scene
-} // namespace agv
+} // namespace skeletal::scene

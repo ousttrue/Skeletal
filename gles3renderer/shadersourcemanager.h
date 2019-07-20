@@ -1,7 +1,7 @@
 #pragma once
 #include "material.h"
 
-namespace agv::renderer
+namespace skeletal::es3
 {
 
 struct ShaderSource
@@ -45,4 +45,4 @@ public:
     static ShaderSourceManager Instance;
 };
 
-} // namespace agv::renderer
+} // namespace skeletal::es3

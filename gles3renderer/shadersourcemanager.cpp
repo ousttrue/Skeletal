@@ -32,21 +32,19 @@ static std::string trim(const std::string &src)
     return std::string(it, src.end());
 }
 
-namespace agv
-{
-namespace renderer
+namespace skeletal::es3
 {
 
 ShaderSourceManager ShaderSourceManager::Instance;
 
 ShaderSourceManager::ShaderSourceManager()
 {
-    agv::renderer::ShaderSourceManager::Instance.SetSource(
-        agv::scene::ShaderType::gizmo,
+    skeletal::es3::ShaderSourceManager::Instance.SetSource(
+        skeletal::scene::ShaderType::gizmo,
         trim(g_gizmo_vs),
         trim(g_gizmo_fs));
-    agv::renderer::ShaderSourceManager::Instance.SetSource(
-        agv::scene::ShaderType::unlit,
+    skeletal::es3::ShaderSourceManager::Instance.SetSource(
+        skeletal::scene::ShaderType::unlit,
         trim(g_unlit_vs),
         trim(g_unlit_fs));
 }
@@ -62,5 +60,4 @@ std::shared_ptr<ShaderSource> ShaderSourceManager::GetSource(scene::ShaderType s
     return found->second;
 }
 
-} // namespace renderer
-} // namespace agv
+} // namespace skeletal::es3

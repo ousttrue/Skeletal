@@ -3,9 +3,7 @@
 #include <plog/Log.h>
 #include <fstream>
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 Scene::Scene()
 {
@@ -86,5 +84,5 @@ void Scene::Load(const std::wstring &path)
     m_model = Model::Load(storage);
     ClearSelection();
 }
-} // namespace scene
-} // namespace agv
+
+} // namespace skeletal::scene

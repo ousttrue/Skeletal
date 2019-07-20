@@ -4,9 +4,7 @@
 #include "mesh.h"
 #include "node.h"
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 
 Model::Model()
@@ -79,5 +77,4 @@ std::shared_ptr<Model> Model::Load(const simplegltf::Storage &storage)
     return model;
 }
 
-} // namespace scene
-} // namespace agv
+} // namespace skeletal::scene

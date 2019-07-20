@@ -1,8 +1,6 @@
 #include "texture.h"
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 
 std::shared_ptr<Texture> Texture::Load(const simplegltf::Storage &storage, const simplegltf::GltfTexture &gltfTexture)
@@ -11,7 +9,8 @@ std::shared_ptr<Texture> Texture::Load(const simplegltf::Storage &storage, const
     auto &image = gltf.images[gltfTexture.source];
 
     auto name = gltfTexture.name;
-    if(name.empty()){
+    if (name.empty())
+    {
         name = image.name;
     }
 
@@ -22,5 +21,4 @@ std::shared_ptr<Texture> Texture::Load(const simplegltf::Storage &storage, const
     return texture;
 }
 
-} // namespace scene
-} // namespace agv
+} // namespace skeletal::scene

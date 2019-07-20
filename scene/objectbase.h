@@ -5,9 +5,7 @@
 #include <unordered_map>
 #include <simplegltf/simplegltf.h>
 
-namespace agv
-{
-namespace scene
+namespace skeletal::scene
 {
 
 class ObjectBase
@@ -40,5 +38,4 @@ public:
     const std::string &GetName() const { return m_name; }
 };
 
-} // namespace scene
-} // namespace agv
+} // namespace skeletal::scene
