@@ -32,7 +32,8 @@ public:
                                                             viewState.Width, viewState.Height, m_view_color.data());
         {
             // draw scene
-            DrawScene(deviceContext);
+            // DrawScene(deviceContext);
+            resourceManager->Draw(deviceContext, &m_camera.state, scene);
 
             // draw gizmo
             m_im3dImplDx11.Draw(deviceContext, m_camera.state.viewProjection.data());

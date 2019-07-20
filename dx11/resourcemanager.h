@@ -23,11 +23,7 @@ public:
     ResourceManager();
     ~ResourceManager();
 
-    // draw to render target,
-    void Begin(const camera::CameraState *pInfo, skeletal::scene::Scene *pScene);
-
-    // then return render target
-    void *End(const camera::CameraState *pInfo);
+    void Draw(void *deviceContext, const camera::CameraState *pInfo, skeletal::scene::Scene *pScene);
 
     void *GetTexture(uint32_t id) const;
 };
