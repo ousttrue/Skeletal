@@ -56,7 +56,18 @@ public:
     }
     void SetWheel(int d)
     {
-        m_state.Mouse.Wheel = d;
+        if (d < 0)
+        {
+            m_state.Mouse.Wheel = -1;
+        }
+        else if (d > 0)
+        {
+            m_state.Mouse.Wheel = 1;
+        }
+        else
+        {
+            m_state.Mouse.Wheel = 0;
+        }
         m_clearWheel = false;
     }
     bool IsRunning() const
