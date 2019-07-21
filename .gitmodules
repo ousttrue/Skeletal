@@ -10,3 +10,6 @@
 [submodule "dependencies/im3d"]
 	path = dependencies/im3d
 	url = https://github.com/john-chapman/im3d.git
+[submodule "dependencies/ImNodes"]
+	path = dependencies/ImNodes
+	url = https://github.com/rokups/ImNodes.git
