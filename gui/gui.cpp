@@ -235,7 +235,7 @@ public:
                 .Mouse = {
                     .X = mouse.X - (int)pos.x,
                     .Y = mouse.Y - (int)pos.y - (int)frameHeight,
-                    .Wheel = mouse.Wheel,
+                    .Wheel = ImGui::IsWindowHovered() ? mouse.Wheel : 0,
                     .Buttons = mouse.Buttons}};
 
             auto texture = m_view.Draw(deviceContext, viewState, scene, &m_resourceManager);
