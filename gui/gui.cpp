@@ -11,7 +11,10 @@
 #include <imgui.h>
 #include <examples/imgui_impl_dx11.h>
 #include <examples/imgui_impl_win32.h>
+
 #include "imnode_sample.h"
+#include "Nodes.h"
+#include "imgui_node_graph_test.h"
 
 #include <exception>
 #include <plog/Log.h>
@@ -274,6 +277,14 @@ public:
 
         static bool showImNode = true;
         ImNode::ShowDemoWindow(&showImNode);
+
+        static ImGui::Nodes nodes_;
+        ImGui::Begin("Nodes");
+        nodes_.ProcessNodes();
+        ImGui::End();
+
+        static bool showImNodesTest = true;
+        ShowExampleAppCustomNodeGraph(&showImNodesTest);
     }
 
     void End()
