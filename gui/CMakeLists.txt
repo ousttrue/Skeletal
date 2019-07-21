@@ -19,8 +19,8 @@ FILE(GLOB SRC
     ${DEPENDENCIES}/imgui/examples/imgui_impl_dx11.cpp
     ${DEPENDENCIES}/imgui/examples/imgui_impl_win32.h
     ${DEPENDENCIES}/imgui/examples/imgui_impl_win32.cpp
-    # ${DEPENDENCIES}/ImGuizmo/*.h
-    # ${DEPENDENCIES}/ImGuizmo/*.cpp
+    ${DEPENDENCIES}/ImNodes/ImNodes.cpp
+    ${DEPENDENCIES}/ImNodes/ImNodesEz.cpp
 	) 
 
 ADD_LIBRARY(${SUB_NAME} 
@@ -32,7 +32,7 @@ TARGET_COMPILE_DEFINITIONS(${SUB_NAME} PUBLIC
 
 TARGET_INCLUDE_DIRECTORIES(${SUB_NAME} PUBLIC
     ../dependencies/imgui
-    # ../dependencies/ImGuizmo
+    ../dependencies/ImNodes
     ../scene
     ../dx11
     ../view

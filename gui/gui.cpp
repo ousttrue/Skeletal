@@ -1,17 +1,19 @@
 #include "gui.h"
 #include "window_state.h"
 #include "guistate.h"
-// #include "orbit_camera.h"
-// #include "im3d_gui.h"
-#include <imgui.h>
-#include <examples/imgui_impl_dx11.h>
-#include <examples/imgui_impl_win32.h>
-#include <exception>
+
+// renderer
 #include <dx11.h>
 #include <dx11_view.h>
 #include <scene.h>
-// #include <ImGuizmo.h>
-// #include <imgui_internal.h>
+
+// imgui
+#include <imgui.h>
+#include <examples/imgui_impl_dx11.h>
+#include <examples/imgui_impl_win32.h>
+#include "imnode_sample.h"
+
+#include <exception>
 #include <plog/Log.h>
 
 const char *glsl_version = "#version 300 es";
@@ -236,7 +238,7 @@ public:
                     .X = mouse.X - (int)pos.x,
                     .Y = mouse.Y - (int)pos.y - (int)frameHeight,
                     .Wheel = ImGui::IsWindowHovered() ? mouse.Wheel : 0,
-                    .Buttons = mouse.Buttons}};
+                    .Buttons = ImGui::IsWindowHovered() ? mouse.Buttons : ButtonFlags::None}};
 
             auto texture = m_view.Draw(deviceContext, viewState, scene, &m_resourceManager);
 
@@ -269,6 +271,9 @@ public:
         }
 
         m_guiState.Update(scene, &m_resourceManager);
+
+        static bool showImNode = true;
+        ImNode::ShowDemoWindow(&showImNode);
     }
 
     void End()
