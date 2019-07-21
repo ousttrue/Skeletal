@@ -3,11 +3,14 @@
 #include "texture.h"
 #include "material.h"
 #include "vertexbuffer.h"
+#include "vertexarray.h"
 #include <camera_state.h>
 #include <scene.h>
 #include <plog/Log.h>
-#include <d3d11.h>
 #include <unordered_map>
+#include <d3d11.h>
+#include <wrl/client.h>
+using namespace Microsoft::WRL;
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -40,7 +43,6 @@ struct StbImage
     }
 };
 
-
 namespace skeletal::dx11
 {
 
@@ -52,44 +54,43 @@ public:
         auto pModel = pScene->GetModel();
         for (auto &node : pModel->Nodes)
         {
-            DrawNode(pInfo, &*node);
+            DrawNode(deviceContext, pInfo, &*node);
         }
     }
 
 private:
-    void DrawNode(const camera::CameraState *info, const skeletal::scene::Node *node)
+    void DrawNode(ID3D11DeviceContext *deviceContext, const camera::CameraState *info, const skeletal::scene::Node *node)
     {
+        auto context = (ID3D11DeviceContext *)deviceContext;
+        ComPtr<ID3D11Device> d3d;
+        context->GetDevice(&d3d);
+        auto device = d3d.Get();
+
         auto &meshGroup = node->MeshGroup;
         if (meshGroup)
         {
+            // node level constants
+            ConstantBuffer nodeConst;
+            nodeConst.ViewProjection = info->viewProjection;
+            nodeConst.World = node->GetWorldMatrix().array();
+
             for (auto &mesh : meshGroup->Meshes)
             {
-                auto vbo = GetOrCreateVertexBuffer(&*mesh);
+                auto vbo = GetOrCreateVertexBuffer(device, &*mesh);
 
                 int offset = 0;
                 for (auto &submesh : mesh->Submeshes)
                 {
-                    auto material = GetOrCreateMaterial(&*submesh->GetMaterial());
+                    auto material = GetOrCreateMaterial(device, &*submesh->GetMaterial());
                     auto shader = material->Shader;
                     if (shader)
                     {
-                        shader->Use();
-
-                        shader->SetUniformValue("ProjectionMatrix", info->projection.data());
-
-                        shader->SetUniformValue("ViewMatrix", info->view.data());
-
-                        auto model = node->GetWorldMatrix().array();
-                        shader->SetUniformValue("ModelMatrix", model.data());
-
-                        shader->SetUniformValue("MVPMatrix", info->CalcModelViewProjection(model).data());
-
-                        // set texture
-                        material->Set();
-
                         auto vao = GetOrCreateVertexArray(&*submesh, vbo, shader);
-                        vao->Bind();
-                        vbo->Draw(offset, submesh->GetDrawCount());
+                        material->Set(deviceContext);
+
+                        shader->SetVSConstantBuffer(deviceContext, nodeConst);
+
+                        vao->Draw(deviceContext, offset, submesh->GetDrawCount());
                     }
                     offset += submesh->GetDrawCount();
                 }
@@ -99,7 +100,7 @@ private:
 
     /// shader
     std::unordered_map<skeletal::scene::ShaderType, std::shared_ptr<Shader>> m_shader_map;
-    std::shared_ptr<Shader> GetOrCreateShader(skeletal::scene::ShaderType shaderType)
+    std::shared_ptr<Shader> GetOrCreateShader(ID3D11Device *device, skeletal::scene::ShaderType shaderType)
     {
         auto found = m_shader_map.find(shaderType);
         if (found != m_shader_map.end())
@@ -107,7 +108,7 @@ private:
             return found->second;
         }
 
-        auto shader = Shader::Create((int)shaderType);
+        auto shader = Shader::Create(device, shaderType);
         if (!shader)
         {
             LOGE << "fail to Shader::Create";
@@ -125,11 +126,11 @@ private:
         auto found = m_texture_map.find(id);
         if (found != m_texture_map.end())
         {
-            return (void *)(int64_t)found->second->GetGLValue();
+            return found->second->GetHandle();
         }
         return nullptr;
     }
-    std::shared_ptr<Texture> GetOrCreateTexture(const skeletal::scene::Texture *pTexture)
+    std::shared_ptr<Texture> GetOrCreateTexture(ID3D11Device *device, const skeletal::scene::Texture *pTexture)
     {
         auto found = m_texture_map.find(pTexture->GetID());
         if (found != m_texture_map.end())
@@ -147,14 +148,14 @@ private:
             return nullptr;
         }
 
-        texture->SetImage(image.width, image.height, image.channels, (const std::byte *)image.data);
+        texture->SetImage(device, image.width, image.height, image.channels, (const std::byte *)image.data);
 
         return texture;
     }
 
     /// material
     std::unordered_map<uint32_t, std::shared_ptr<Material>> m_material_map;
-    std::shared_ptr<Material> GetOrCreateMaterial(const skeletal::scene::Material *pMaterial)
+    std::shared_ptr<Material> GetOrCreateMaterial(ID3D11Device *device, const skeletal::scene::Material *pMaterial)
     {
         auto found = m_material_map.find(pMaterial->GetID());
         if (found != m_material_map.end())
@@ -165,12 +166,12 @@ private:
         auto material = std::make_shared<Material>();
         m_material_map.insert(std::make_pair(pMaterial->GetID(), material));
 
-        material->Shader = GetOrCreateShader(pMaterial->ShaderType);
+        material->Shader = GetOrCreateShader(device, pMaterial->ShaderType);
 
         // texture
         if (pMaterial->ColorTexture)
         {
-            material->Texture = GetOrCreateTexture(&*pMaterial->ColorTexture);
+            material->Texture = GetOrCreateTexture(device, &*pMaterial->ColorTexture);
         }
 
         return material;
@@ -178,7 +179,7 @@ private:
 
     /// vertex buffer
     std::unordered_map<uint32_t, std::shared_ptr<VertexBufferGroup>> m_vertexBuffer_map;
-    std::shared_ptr<VertexBufferGroup> GetOrCreateVertexBuffer(const skeletal::scene::Mesh *pMesh)
+    std::shared_ptr<VertexBufferGroup> GetOrCreateVertexBuffer(ID3D11Device *device, const skeletal::scene::Mesh *pMesh)
     {
         {
             auto found = m_vertexBuffer_map.find(pMesh->GetID());
@@ -193,13 +194,13 @@ private:
 
         for (auto pair : pMesh->VertexAttributes)
         {
-            vbo->AddAttribute(pair.first, pair.second);
+            vbo->AddAttribute(device, pair.first, pair.second);
         }
 
         auto &indices = pMesh->Indices;
         if (indices.data)
         {
-            vbo->SetIndex(indices);
+            vbo->SetIndex(device, indices);
         }
 
         return vbo;
@@ -222,25 +223,7 @@ private:
         auto vao = std::make_shared<VertexArray>();
         m_vertexArray_map.insert(std::make_pair(pSubmesh->GetID(), vao));
 
-        vao->Bind();
-
-        for (auto kv : shader->AttributeMap)
-        {
-            auto found = vbo->m_attributes.find(kv.first);
-            if (found != vbo->m_attributes.end())
-            {
-                found->second->Bind();
-                vao->BindSlot(kv.second, found->second);
-            }
-        }
-        if (vbo->m_indices)
-        {
-            vbo->m_indices->Bind();
-        }
-
-        VertexArray::Unbind();
-        VertexBuffer::UnbindIndex();
-        VertexBuffer::UnbindAttribute();
+        vao->SetBuffer(vbo, shader);
 
         return vao;
     }

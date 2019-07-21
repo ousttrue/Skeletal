@@ -5,6 +5,7 @@
     "catch2TestExplorer.defaultCwd": "${absDirpath}",
     "cSpell.words": [
         "CMAKE",
+        "DCOMPILE",
         "Depthf",
         "ERASEBKGND",
         "GLES",
@@ -37,6 +38,7 @@
         "amth",
         "centrarl",
         "countof",
+        "hlsl",
         "imgui",
         "nlohmann",
         "plog",

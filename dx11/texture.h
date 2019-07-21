@@ -1,19 +1,22 @@
 #pragma once
+#include <cstddef>
 
+struct ID3D11Device;
+struct ID3D11DeviceContext;
 namespace skeletal::dx11
 {
 
+class TextureImpl;
 class Texture
 {
-    uint32_t m_texture = 0;
+    TextureImpl *m_impl = nullptr;
 
 public:
-    uint32_t GetGLValue() const { return m_texture; }
     Texture();
     ~Texture();
-    void Bind(int slot);
-    static void Unbind();
-    void Texture::SetImage(int width, int height, int channels, const std::byte *data);
+    void SetImage(ID3D11Device *device, int width, int height, int channels, const std::byte *data);
+    void Bind(ID3D11DeviceContext *context, int slot);
+    void* GetHandle();
 };
 
 } // namespace skeletal::dx11

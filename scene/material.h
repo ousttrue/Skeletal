@@ -1,15 +1,9 @@
 #pragma once
 #include "objectbase.h"
+#include "shadertype.h"
 
 namespace skeletal::scene
 {
-
-enum class ShaderType
-{
-    gizmo,
-    unlit,
-    pbr,
-};
 
 class Texture;
 class Material : public ObjectBase

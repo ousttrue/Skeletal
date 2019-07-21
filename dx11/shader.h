@@ -2,28 +2,34 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <array>
+#include <shadertype.h>
+
+struct ID3D11Device;
+struct ID3D11DeviceContext;
 
 namespace skeletal::dx11
 {
 
+struct ConstantBuffer
+{
+    std::array<float, 16> World;
+    std::array<float, 16> ViewProjection;
+};
+
+static_assert(sizeof(ConstantBuffer) == sizeof(float) * 16 * 2);
+class ShaderImpl;
 class Shader
 {
-    uint32_t m_program = 0;
+    ShaderImpl *m_impl = nullptr;
 
 public:
     std::unordered_map<std::string, uint32_t> AttributeMap;
-    Shader(uint32_t program);
+    Shader();
     ~Shader();
-
-    // scene::ShaderType
-    static std::shared_ptr<Shader> Create(int shaderType);
-
-    uint32_t GetUniformLocation(const std::string &name);
-    void SetUniformValue(uint32_t location, const float m[16]);
-    void SetUniformValue(const std::string &name, const float m[16]);
-    void SetUniformValue(const std::string &name, int value);
-
-    void Use();
+    static std::shared_ptr<Shader> Create(ID3D11Device *device, skeletal::scene::ShaderType shaderType);
+    void SetVSConstantBuffer(ID3D11DeviceContext *deviceContext, const ConstantBuffer &buffer);
+    void Use(ID3D11DeviceContext *deviceContext);
 };
 
 } // namespace skeletal::dx11

@@ -1,5 +1,4 @@
 #include "shadersourcemanager.h"
-#include "material.h"
 #include <plog/Log.h>
 #include <windows.h>
 

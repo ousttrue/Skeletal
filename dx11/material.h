@@ -2,6 +2,7 @@
 #include <memory>
 #include <array>
 
+struct ID3D11DeviceContext;
 namespace skeletal::dx11
 {
 
@@ -16,7 +17,7 @@ public:
 
     std::shared_ptr<Texture> Texture;
 
-    void Set();
+    void Set(ID3D11DeviceContext *context);
 };
 
 } // namespace skeletal::dx11

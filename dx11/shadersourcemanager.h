@@ -1,5 +1,8 @@
 #pragma once
-#include "material.h"
+#include "shadertype.h"
+#include <memory>
+#include <unordered_map>
+#include <string>
 
 namespace skeletal
 {
