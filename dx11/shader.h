@@ -29,7 +29,7 @@ public:
     ~Shader();
     static std::shared_ptr<Shader> Create(ID3D11Device *device, skeletal::scene::ShaderType shaderType);
     void SetVSConstantBuffer(ID3D11DeviceContext *deviceContext, const ConstantBuffer &buffer);
-    void Use(ID3D11DeviceContext *deviceContext);
+    void Activate(ID3D11DeviceContext *deviceContext);
 };
 
 } // namespace skeletal::dx11

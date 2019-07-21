@@ -15,7 +15,7 @@ public:
     Texture();
     ~Texture();
     void SetImage(ID3D11Device *device, int width, int height, int channels, const std::byte *data);
-    void Bind(ID3D11DeviceContext *context, int slot);
+    void Activate(ID3D11DeviceContext *context, int slot);
     void* GetHandle();
 };
 

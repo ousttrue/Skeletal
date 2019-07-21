@@ -86,7 +86,7 @@ private:
                     if (shader)
                     {
                         auto vao = GetOrCreateVertexArray(&*submesh, vbo, shader);
-                        material->Set(deviceContext);
+                        material->Activate(device, deviceContext);
 
                         shader->SetVSConstantBuffer(deviceContext, nodeConst);
 
@@ -121,6 +121,8 @@ private:
 
     /// texture
     std::unordered_map<uint32_t, std::shared_ptr<Texture>> m_texture_map;
+
+public:
     void *GetTexture(uint32_t id) const
     {
         auto found = m_texture_map.find(id);
@@ -130,6 +132,8 @@ private:
         }
         return nullptr;
     }
+
+private:
     std::shared_ptr<Texture> GetOrCreateTexture(ID3D11Device *device, const skeletal::scene::Texture *pTexture)
     {
         auto found = m_texture_map.find(pTexture->GetID());
@@ -246,7 +250,7 @@ void ResourceManager::Draw(void *deviceContext, const camera::CameraState *pInfo
 
 void *ResourceManager::GetTexture(uint32_t id) const
 {
-    return nullptr;
+    return m_impl->GetTexture(id);
 }
 
 } // namespace skeletal::dx11

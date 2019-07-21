@@ -13,7 +13,7 @@ class TextureImpl
 
 public:
     ID3D11ShaderResourceView *GetHandle() const { return m_srv.Get(); }
-    void Bind(ID3D11DeviceContext *context, int slot)
+    void Activate(ID3D11DeviceContext *context, int slot)
     {
         ID3D11ShaderResourceView *srvList[] = {m_srv.Get()};
         context->PSSetShaderResources(slot, _countof(srvList), srvList);
@@ -75,9 +75,9 @@ void Texture::SetImage(ID3D11Device *device, int width, int height, int channels
     m_impl->SetImage(device, width, height, channels, data);
 }
 
-void Texture::Bind(ID3D11DeviceContext *context, int slot)
+void Texture::Activate(ID3D11DeviceContext *context, int slot)
 {
-    m_impl->Bind(context, slot);
+    m_impl->Activate(context, slot);
 }
 
 void *Texture::GetHandle()

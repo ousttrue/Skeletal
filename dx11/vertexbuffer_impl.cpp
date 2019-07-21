@@ -26,6 +26,10 @@ void VertexBufferGroupImpl::CreateVertexBuffer(ID3D11Device *device, const std::
     impl->m_buffer = buffer;
     switch (view.valuetype)
     {
+    case simplegltf::ValueType::FloatVec4:
+        impl->m_format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        break;
+
     case simplegltf::ValueType::FloatVec3:
         impl->m_format = DXGI_FORMAT_R32G32B32_FLOAT;
         break;
