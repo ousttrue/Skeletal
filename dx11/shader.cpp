@@ -30,7 +30,7 @@ public:
         }
     }
 
-    void Use(ID3D11DeviceContext *ctx)
+    void Activate(ID3D11DeviceContext *ctx)
     {
         ctx->IASetInputLayout(m_inputLayout.Get());
 
@@ -47,6 +47,8 @@ public:
             ID3D11Buffer *psConstants[] = {m_psConstants.Get()};
             ctx->PSSetConstantBuffers(0, _countof(psConstants), psConstants);
         }
+
+        ctx->GSSetShader(nullptr, nullptr, 0);
     }
 };
 
@@ -100,7 +102,7 @@ std::shared_ptr<Shader> Shader::Create(ID3D11Device *device, skeletal::scene::Sh
     // create layout for vs
     D3D11_INPUT_ELEMENT_DESC inputDesc[] = {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}};
+        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}};
     ComPtr<ID3D11InputLayout> inputLayout;
     if (FAILED(device->CreateInputLayout(inputDesc, 2, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &inputLayout)))
     {
@@ -150,9 +152,9 @@ void Shader::SetVSConstantBuffer(ID3D11DeviceContext *deviceContext, const Const
     m_impl->SetVSConstantBuffer(deviceContext, buffer);
 }
 
-void Shader::Use(ID3D11DeviceContext *deviceContext)
+void Shader::Activate(ID3D11DeviceContext *deviceContext)
 {
-    m_impl->Use(deviceContext);
+    m_impl->Activate(deviceContext);
 }
 
 } // namespace skeletal::dx11
